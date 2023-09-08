@@ -1,6 +1,7 @@
 vectorscan (5.4.10.1-1) unstable; urgency=medium
 
   * New upstream release.
+  * Enable FAT_RUNTIME=on for arm64.
 
  -- Konstantinos Margaritis <markos@debian.org>  Fri, 08 Sep 2023 16:46:44 +0300
 
