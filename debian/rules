@@ -6,6 +6,10 @@ ifeq ($(DEB_HOST_ARCH),amd64)
 export DEB_CMAKE_FLAGS = -DBUILD_AVX2=on -DBUILD_AVX512=on -DBUILD_AVX512VBMI=off -DFAT_RUNTIME=on
 endif
 
+ifeq ($(DEB_HOST_ARCH),arm64)
+export DEB_CMAKE_FLAGS = -DBUILD_SVE=on -DBUILD_SVE2=on -DBUILD_SVE2_BITPERM=on -DFAT_RUNTIME=on
+endif
+
 %:
 	dh $@
 
