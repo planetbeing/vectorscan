@@ -15,6 +15,6 @@ endif
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
-		-DBUILD_STATIC_AND_SHARED=1 \
+		-DBUILD_STATIC_LIBS=On -DBUILD_SHARED_LIBS=On \
 		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
 		${DEB_CMAKE_FLAGS}
