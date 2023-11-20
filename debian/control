@@ -5,6 +5,7 @@ Build-Depends: cmake,
                debhelper-compat (= 13),
                libboost-dev,
                libpcap-dev,
+               libsqlite3-dev,
                pkg-config,
                po-debconf,
                python3,
@@ -39,7 +40,7 @@ Description: Portable fork of Intel's Hyperscan library (development files)
 
 Package: libvectorscan5
 Architecture: any-amd64 arm64 ppc64el
-Depends: ${misc:Depends}, ${shlibs:Depends}, sse4.2-support [any-amd64]
+Depends: sse4.2-support [any-amd64], ${misc:Depends}, ${shlibs:Depends}
 Multi-Arch: same
 Pre-Depends: debconf
 Replaces: libhyperscan5
