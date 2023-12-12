@@ -82,44 +82,6 @@ struct zone {
     const u8 *floodPtr;
 };
 
-static
-const ALIGN_CL_DIRECTIVE u8 zone_or_mask[ITER_BYTES+1][ITER_BYTES] = {
-    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-    { 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-    { 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-    { 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-    { 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-    { 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-    { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-    { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-    { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-    { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-      0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-    { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-      0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-    { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-      0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00 },
-    { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-      0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00 },
-    { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-      0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00 },
-    { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00 },
-    { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00 },
-    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
-};
-
 /* generates an initial state mask based on the last byte-ish of history rather
  * than being all accepting. If there is no history to consider, the state is
  * generated based on the minimum length of each bucket in order to prevent
@@ -141,13 +103,13 @@ m128 getInitState(const struct FDR *fdr, u8 len_history, const u64a *ft,
     return s;
 }
 
+
 static really_inline
 void get_conf_stride_1(const u8 *itPtr, UNUSED const u8 *start_ptr,
-                       UNUSED const u8 *end_ptr, u32 domain_mask_flipped,
+                       UNUSED const u8 *end_ptr, u32 domain_mask,
                        const u64a *ft, u64a *conf0, u64a *conf8, m128 *s) {
     /* +1: the zones ensure that we can read the byte at z->end */
     assert(itPtr >= start_ptr && itPtr + ITER_BYTES <= end_ptr);
-    u64a domain_mask = ~domain_mask_flipped;
 
     u64a it_hi = *(const u64a *)itPtr;
     u64a it_lo = *(const u64a *)(itPtr + 8);
@@ -212,25 +174,25 @@ void get_conf_stride_1(const u8 *itPtr, UNUSED const u8 *start_ptr,
 
 static really_inline
 void get_conf_stride_2(const u8 *itPtr, UNUSED const u8 *start_ptr,
-                       UNUSED const u8 *end_ptr, u32 domain_mask_flipped,
+                       UNUSED const u8 *end_ptr, u32 domain_mask,
                        const u64a *ft, u64a *conf0, u64a *conf8, m128 *s) {
     assert(itPtr >= start_ptr && itPtr + ITER_BYTES <= end_ptr);
 
-    u64a reach0 = andn(domain_mask_flipped, itPtr);
-    u64a reach2 = andn(domain_mask_flipped, itPtr + 2);
-    u64a reach4 = andn(domain_mask_flipped, itPtr + 4);
-    u64a reach6 = andn(domain_mask_flipped, itPtr + 6);
+    u64a it_hi = *(const u64a *)itPtr;
+    u64a it_lo = *(const u64a *)(itPtr + 8);
+    u64a reach0  = domain_mask & it_hi;
+    u64a reach2  = domain_mask & (it_hi >> 16);
+    u64a reach4  = domain_mask & (it_hi >> 32);
+    u64a reach6  = domain_mask & (it_hi >> 48);
+    u64a reach8  = domain_mask & it_lo;
+    u64a reach10 = domain_mask & (it_lo >> 16);
+    u64a reach12 = domain_mask & (it_lo >> 32);
+    u64a reach14 = domain_mask & (it_lo >> 48);
 
     m128 st0 = load_m128_from_u64a(ft + reach0);
     m128 st2 = load_m128_from_u64a(ft + reach2);
     m128 st4 = load_m128_from_u64a(ft + reach4);
     m128 st6 = load_m128_from_u64a(ft + reach6);
-
-    u64a reach8 = andn(domain_mask_flipped, itPtr + 8);
-    u64a reach10 = andn(domain_mask_flipped, itPtr + 10);
-    u64a reach12 = andn(domain_mask_flipped, itPtr + 12);
-    u64a reach14 = andn(domain_mask_flipped, itPtr + 14);
-
     m128 st8 = load_m128_from_u64a(ft + reach8);
     m128 st10 = load_m128_from_u64a(ft + reach10);
     m128 st12 = load_m128_from_u64a(ft + reach12);
@@ -239,6 +201,9 @@ void get_conf_stride_2(const u8 *itPtr, UNUSED const u8 *start_ptr,
     st2  = lshiftbyte_m128(st2, 2);
     st4  = lshiftbyte_m128(st4, 4);
     st6  = lshiftbyte_m128(st6, 6);
+    st10 = lshiftbyte_m128(st10, 2);
+    st12 = lshiftbyte_m128(st12, 4);
+    st14 = lshiftbyte_m128(st14, 6);
 
     *s = or128(*s, st0);
     *s = or128(*s, st2);
@@ -248,10 +213,6 @@ void get_conf_stride_2(const u8 *itPtr, UNUSED const u8 *start_ptr,
     *conf0 = movq(*s);
     *s = rshiftbyte_m128(*s, 8);
     *conf0 ^= ~0ULL;
-
-    st10 = lshiftbyte_m128(st10, 2);
-    st12 = lshiftbyte_m128(st12, 4);
-    st14 = lshiftbyte_m128(st14, 6);
 
     *s = or128(*s, st8);
     *s = or128(*s, st10);
@@ -265,14 +226,16 @@ void get_conf_stride_2(const u8 *itPtr, UNUSED const u8 *start_ptr,
 
 static really_inline
 void get_conf_stride_4(const u8 *itPtr, UNUSED const u8 *start_ptr,
-                       UNUSED const u8 *end_ptr, u32 domain_mask_flipped,
+                       UNUSED const u8 *end_ptr, u32 domain_mask,
                        const u64a *ft, u64a *conf0, u64a *conf8, m128 *s) {
     assert(itPtr >= start_ptr && itPtr + ITER_BYTES <= end_ptr);
 
-    u64a reach0 = andn(domain_mask_flipped, itPtr);
-    u64a reach4 = andn(domain_mask_flipped, itPtr + 4);
-    u64a reach8 = andn(domain_mask_flipped, itPtr + 8);
-    u64a reach12 = andn(domain_mask_flipped, itPtr + 12);
+    u64a it_hi = *(const u64a *)itPtr;
+    u64a it_lo = *(const u64a *)(itPtr + 8);
+    u64a reach0  = domain_mask & it_hi;
+    u64a reach4  = domain_mask & (it_hi >> 32);
+    u64a reach8  = domain_mask & it_lo;
+    u64a reach12 = domain_mask & (it_lo >> 32);
 
     m128 st0 = load_m128_from_u64a(ft + reach0);
     m128 st4 = load_m128_from_u64a(ft + reach4);
@@ -660,41 +623,6 @@ size_t prepareZones(const u8 *buf, size_t len, const u8 *hend,
 
 #define INVALID_MATCH_ID (~0U)
 
-#define FDR_MAIN_LOOP(zz, s, get_conf_fn)                                   \
-    do {                                                                    \
-        const u8 *tryFloodDetect = zz->floodPtr;                            \
-        const u8 *start_ptr = zz->start;                                    \
-        const u8 *end_ptr = zz->end;                                        \
-        for (const u8 *itPtr = ROUNDDOWN_PTR(start_ptr, 64); itPtr + 4*ITER_BYTES <= end_ptr;      \
-            itPtr += 4*ITER_BYTES) {                                        \
-            __builtin_prefetch(itPtr);                                      \
-        }                                                                   \
-                                                                            \
-        for (const u8 *itPtr = start_ptr; itPtr + ITER_BYTES <= end_ptr;    \
-            itPtr += ITER_BYTES) {                                          \
-            if (unlikely(itPtr > tryFloodDetect)) {                         \
-                tryFloodDetect = floodDetect(fdr, a, &itPtr, tryFloodDetect,\
-                                             &floodBackoff, &control,       \
-                                             ITER_BYTES);                   \
-                if (unlikely(control == HWLM_TERMINATE_MATCHING)) {         \
-                    return HWLM_TERMINATED;                                 \
-                }                                                           \
-            }                                                               \
-            __builtin_prefetch(itPtr + ITER_BYTES);                         \
-            u64a conf0;                                                     \
-            u64a conf8;                                                     \
-            get_conf_fn(itPtr, start_ptr, end_ptr, domain_mask_flipped,     \
-                        ft, &conf0, &conf8, &s);                            \
-            do_confirm_fdr(&conf0, 0, &control, confBase, a, itPtr,         \
-                           &last_match_id, zz);                             \
-            do_confirm_fdr(&conf8, 8, &control, confBase, a, itPtr,         \
-                           &last_match_id, zz);                             \
-            if (unlikely(control == HWLM_TERMINATE_MATCHING)) {             \
-                return HWLM_TERMINATED;                                     \
-            }                                                               \
-        } /* end for loop */                                                \
-    } while (0)                                                             \
-
 static never_inline
 hwlm_error_t fdr_engine_exec(const struct FDR *fdr,
                              const struct FDR_Runtime_Args *a,
@@ -703,7 +631,7 @@ hwlm_error_t fdr_engine_exec(const struct FDR *fdr,
 
     u32 floodBackoff = FLOOD_BACKOFF_START;
     u32 last_match_id = INVALID_MATCH_ID;
-    u32 domain_mask_flipped = ~fdr->domainMask;
+    u32 domain_mask = fdr->domainMask;
     u8 stride = fdr->stride;
     const u64a *ft =
         (const u64a *)((const u8 *)fdr + ROUNDUP_CL(sizeof(struct FDR)));
@@ -722,42 +650,51 @@ hwlm_error_t fdr_engine_exec(const struct FDR *fdr,
 
     for (size_t curZone = 0; curZone < numZone; curZone++) {
         struct zone *z = &zones[curZone];
-        dumpZoneInfo(z, curZone);
-
-        /* When a zone contains less data than is processed in an iteration
-         * of FDR_MAIN_LOOP(), we need to scan over some extra data.
-         *
-         * We have chosen to scan this extra data at the start of the
-         * iteration. The extra data is either data we have already scanned or
-         * garbage (if it is earlier than offset 0),
-         *
-         * As a result we need to shift the incoming state back so that it will
-         * properly line up with the data being scanned.
-         *
-         * We also need to forbid reporting any matches in the data being
-         * rescanned as they have already been reported (or are over garbage but
-         * later stages should also provide that safety guarantee).
-         */
 
         u8 shift = z->shift;
-
         state = variable_byte_shift_m128(state, shift);
+        state = or128(state, variable_byte_shift_m128(ones128(), shift-16));
 
-        state = or128(state, load128(zone_or_mask[shift]));
-
-        switch (stride) {
-        case 1:
-            FDR_MAIN_LOOP(z, state, get_conf_stride_1);
-            break;
-        case 2:
-            FDR_MAIN_LOOP(z, state, get_conf_stride_2);
-            break;
-        case 4:
-            FDR_MAIN_LOOP(z, state, get_conf_stride_4);
-            break;
-        default:
-            break;
+        const u8 *tryFloodDetect = z->floodPtr;
+        const u8 *start_ptr = z->start;
+        const u8 *end_ptr = z->end;
+        for (const u8 *itPtr = ROUNDDOWN_PTR(z->start, 64); itPtr + 4*ITER_BYTES <= z->end; itPtr += 4*ITER_BYTES) {
+            __builtin_prefetch(itPtr + 16*ITER_BYTES);
         }
+
+        for (const u8 *itPtr = start_ptr; itPtr + ITER_BYTES <= end_ptr;
+            itPtr += ITER_BYTES) {
+            if (unlikely(itPtr > tryFloodDetect)) {
+                tryFloodDetect = floodDetect(fdr, a, &itPtr, tryFloodDetect,
+                                             &floodBackoff, &control,
+                                             ITER_BYTES);
+                if (unlikely(control == HWLM_TERMINATE_MATCHING)) {
+                    return HWLM_TERMINATED;
+                }
+            }
+            u64a conf0;
+            u64a conf8;
+            __builtin_prefetch(itPtr + 16*ITER_BYTES);
+            switch (stride) {
+            case 1:
+                get_conf_stride_1(itPtr, start_ptr, end_ptr, domain_mask, ft, &conf0, &conf8, &state);
+                break;
+            case 2:
+                get_conf_stride_2(itPtr, start_ptr, end_ptr, domain_mask, ft, &conf0, &conf8, &state);
+                break;
+            case 4:
+                get_conf_stride_4(itPtr, start_ptr, end_ptr, domain_mask, ft, &conf0, &conf8, &state);
+                break;
+            default:
+                break;
+            }
+
+            do_confirm_fdr(&conf0, 0, &control, confBase, a, itPtr, &last_match_id, z);
+            do_confirm_fdr(&conf8, 8, &control, confBase, a, itPtr, &last_match_id, z);
+            if (unlikely(control == HWLM_TERMINATE_MATCHING)) {
+                return HWLM_TERMINATED;
+            }
+        } /* end for loop */
     }
 
     return HWLM_SUCCESS;
