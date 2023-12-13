@@ -102,10 +102,7 @@ const u8 *shuftiExecReal(m128 mask_lo, m128 mask_hi, const u8 *buf, const u8 *bu
     const u8 *d = buf;
     const u8 *rv;
 
-    __builtin_prefetch(d +   64);
-    __builtin_prefetch(d + 2*64);
-    __builtin_prefetch(d + 3*64);
-    __builtin_prefetch(d + 4*64);
+    __builtin_prefetch(d + 16*64);
     DEBUG_PRINTF("start %p end %p \n", d, buf_end);
     assert(d < buf_end);
     if (d + S <= buf_end) {
@@ -119,7 +116,7 @@ const u8 *shuftiExecReal(m128 mask_lo, m128 mask_hi, const u8 *buf, const u8 *bu
         }
 
         while(d + S <= buf_end) {
-            __builtin_prefetch(d + 64);
+            __builtin_prefetch(d + 16*64);
             DEBUG_PRINTF("d %p \n", d);
             SuperVector<S> chars = SuperVector<S>::load(d);
             rv = fwdBlock(wide_mask_lo, wide_mask_hi, chars, d);
@@ -154,10 +151,7 @@ const u8 *rshuftiExecReal(m128 mask_lo, m128 mask_hi, const u8 *buf, const u8 *b
     const u8 *d = buf_end;
     const u8 *rv;
 
-    __builtin_prefetch(d -   64);
-    __builtin_prefetch(d - 2*64);
-    __builtin_prefetch(d - 3*64);
-    __builtin_prefetch(d - 4*64);
+    __builtin_prefetch(d - 16*64);
     DEBUG_PRINTF("start %p end %p \n", buf, d);
     assert(d > buf);
     if (d - S >= buf) {
@@ -174,7 +168,7 @@ const u8 *rshuftiExecReal(m128 mask_lo, m128 mask_hi, const u8 *buf, const u8 *b
         while (d - S >= buf) {
             DEBUG_PRINTF("aligned %p \n", d);
             // On large packet buffers, this prefetch appears to get us about 2%.
-            __builtin_prefetch(d - 64);
+            __builtin_prefetch(d - 16*64);
 
             d -= S;
             SuperVector<S> chars = SuperVector<S>::load(d);
@@ -212,10 +206,7 @@ const u8 *shuftiDoubleExecReal(m128 mask1_lo, m128 mask1_hi, m128 mask2_lo, m128
     const u8 *d = buf;
     const u8 *rv;
 
-    __builtin_prefetch(d +   64);
-    __builtin_prefetch(d + 2*64);
-    __builtin_prefetch(d + 3*64);
-    __builtin_prefetch(d + 4*64);
+    __builtin_prefetch(d + 16*64);
     DEBUG_PRINTF("start %p end %p \n", d, buf_end);
     assert(d < buf_end);
     if (d + S <= buf_end) {
@@ -230,7 +221,7 @@ const u8 *shuftiDoubleExecReal(m128 mask1_lo, m128 mask1_hi, m128 mask2_lo, m128
         }
 
         while(d + S <= buf_end) {
-            __builtin_prefetch(d + 64);
+            __builtin_prefetch(d + 16*64);
             DEBUG_PRINTF("d %p \n", d);
 
             SuperVector<S> chars = SuperVector<S>::load(d);

@@ -80,10 +80,7 @@ const u8 *truffleExecReal(m128 &shuf_mask_lo_highclear, m128 shuf_mask_lo_highse
     DEBUG_PRINTF("start %p end %p \n", d, buf_end);
     assert(d < buf_end);
 
-    __builtin_prefetch(d +   64);
-    __builtin_prefetch(d + 2*64);
-    __builtin_prefetch(d + 3*64);
-    __builtin_prefetch(d + 4*64);
+    __builtin_prefetch(d + 16*64);
     DEBUG_PRINTF("start %p end %p \n", d, buf_end);
     assert(d < buf_end);
     if (d + S <= buf_end) {
@@ -98,7 +95,7 @@ const u8 *truffleExecReal(m128 &shuf_mask_lo_highclear, m128 shuf_mask_lo_highse
         }
 
         while(d + S <= buf_end) {
-            __builtin_prefetch(d + 64);
+            __builtin_prefetch(d + 16*64);
             DEBUG_PRINTF("d %p \n", d);
             SuperVector<S> chars = SuperVector<S>::load(d);
             rv = fwdBlock(wide_shuf_mask_lo_highclear, wide_shuf_mask_lo_highset, chars, d);
@@ -149,10 +146,7 @@ const u8 *rtruffleExecReal(m128 shuf_mask_lo_highclear, m128 shuf_mask_lo_highse
     const u8 *d = buf_end;
     const u8 *rv;
 
-    __builtin_prefetch(d -   64);
-    __builtin_prefetch(d - 2*64);
-    __builtin_prefetch(d - 3*64);
-    __builtin_prefetch(d - 4*64);
+    __builtin_prefetch(d - 16*64);
     DEBUG_PRINTF("start %p end %p \n", buf, d);
     assert(d > buf);
     if (d - S >= buf) {
@@ -170,7 +164,7 @@ const u8 *rtruffleExecReal(m128 shuf_mask_lo_highclear, m128 shuf_mask_lo_highse
         while (d - S >= buf) {
             DEBUG_PRINTF("aligned %p \n", d);
             // On large packet buffers, this prefetch appears to get us about 2%.
-            __builtin_prefetch(d - 64);
+            __builtin_prefetch(d - 16*64);
 
             d -= S;
             SuperVector<S> chars = SuperVector<S>::load(d);

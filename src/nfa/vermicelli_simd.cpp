@@ -93,10 +93,7 @@ static const u8 *vermicelliExecReal(SuperVector<S> const chars, SuperVector<S> c
     const u8 *d = buf;
     const u8 *rv;
 
-    __builtin_prefetch(d +   64);
-    __builtin_prefetch(d + 2*64);
-    __builtin_prefetch(d + 3*64);
-    __builtin_prefetch(d + 4*64);
+    __builtin_prefetch(d + 16*64);
     DEBUG_PRINTF("start %p end %p \n", d, buf_end);
     assert(d < buf_end);
     if (d + S <= buf_end) {
@@ -111,7 +108,7 @@ static const u8 *vermicelliExecReal(SuperVector<S> const chars, SuperVector<S> c
         }
 
         while(d + S <= buf_end) {
-            __builtin_prefetch(d + 64);
+            __builtin_prefetch(d + 16*64);
             DEBUG_PRINTF("d %p \n", d);
             SuperVector<S> data = SuperVector<S>::load(d);
             rv = vermicelliBlock(data, chars, casemask, d, S);
@@ -143,10 +140,7 @@ static const u8 *nvermicelliExecReal(SuperVector<S> const chars, SuperVector<S> 
     const u8 *d = buf;
     const u8 *rv;
 
-    __builtin_prefetch(d +   64);
-    __builtin_prefetch(d + 2*64);
-    __builtin_prefetch(d + 3*64);
-    __builtin_prefetch(d + 4*64);
+    __builtin_prefetch(d + 16*64);
     DEBUG_PRINTF("start %p end %p \n", d, buf_end);
     assert(d < buf_end);
     if (d + S <= buf_end) {
@@ -161,7 +155,7 @@ static const u8 *nvermicelliExecReal(SuperVector<S> const chars, SuperVector<S> 
         }
 
         while(d + S <= buf_end) {
-            __builtin_prefetch(d + 64);
+            __builtin_prefetch(d + 16*64);
             DEBUG_PRINTF("d %p \n", d);
             SuperVector<S> data = SuperVector<S>::load(d);
             rv = vermicelliBlockNeg(data, chars, casemask, d, S);
@@ -195,10 +189,7 @@ const u8 *rvermicelliExecReal(SuperVector<S> const chars, SuperVector<S> const c
     const u8 *d = buf_end;
     const u8 *rv;
 
-    __builtin_prefetch(d -   64);
-    __builtin_prefetch(d - 2*64);
-    __builtin_prefetch(d - 3*64);
-    __builtin_prefetch(d - 4*64);
+    __builtin_prefetch(d - 16*64);
     DEBUG_PRINTF("start %p end %p \n", buf, d);
     assert(d > buf);
     if (d - S >= buf) {
@@ -216,7 +207,7 @@ const u8 *rvermicelliExecReal(SuperVector<S> const chars, SuperVector<S> const c
         while (d - S >= buf) {
             DEBUG_PRINTF("aligned %p \n", d);
             // On large packet buffers, this prefetch appears to get us about 2%.
-            __builtin_prefetch(d - 64);
+            __builtin_prefetch(d - 16*64);
 
             d -= S;
             SuperVector<S> data = SuperVector<S>::load(d);
@@ -250,10 +241,7 @@ const u8 *rnvermicelliExecReal(SuperVector<S> const chars, SuperVector<S> const 
     const u8 *d = buf_end;
     const u8 *rv;
 
-    __builtin_prefetch(d -   64);
-    __builtin_prefetch(d - 2*64);
-    __builtin_prefetch(d - 3*64);
-    __builtin_prefetch(d - 4*64);
+    __builtin_prefetch(d - 16*64);
     DEBUG_PRINTF("start %p end %p \n", buf, d);
     assert(d > buf);
     if (d - S >= buf) {
@@ -271,7 +259,7 @@ const u8 *rnvermicelliExecReal(SuperVector<S> const chars, SuperVector<S> const 
         while (d - S >= buf) {
             DEBUG_PRINTF("aligned %p \n", d);
             // On large packet buffers, this prefetch appears to get us about 2%.
-            __builtin_prefetch(d - 64);
+            __builtin_prefetch(d - 16*64);
 
             d -= S;
             SuperVector<S> data = SuperVector<S>::load(d);
@@ -308,10 +296,7 @@ static const u8 *vermicelliDoubleExecReal(u8 const c1, u8 const c2, SuperVector<
     const SuperVector<VECTORSIZE> chars2 = SuperVector<VECTORSIZE>::dup_u8(c2);
     const u8 casechar = casemask.u.u8[0];
 
-    __builtin_prefetch(d +   64);
-    __builtin_prefetch(d + 2*64);
-    __builtin_prefetch(d + 3*64);
-    __builtin_prefetch(d + 4*64);
+    __builtin_prefetch(d + 16*64);
     DEBUG_PRINTF("start %p end %p \n", d, buf_end);
     assert(d < buf_end);
     if (d + S < buf_end) {
@@ -326,7 +311,7 @@ static const u8 *vermicelliDoubleExecReal(u8 const c1, u8 const c2, SuperVector<
         }
 
         while(d + S < buf_end) {
-            __builtin_prefetch(d + 64);
+            __builtin_prefetch(d + 16*64);
             DEBUG_PRINTF("d %p \n", d);
             SuperVector<S> data = SuperVector<S>::load(d);
             rv = vermicelliDoubleBlock(data, chars1, chars2, casemask, c1, c2, casechar, d + S, S);
@@ -378,10 +363,7 @@ const u8 *rvermicelliDoubleExecReal(char c1, char c2, SuperVector<S> const casem
     const SuperVector<VECTORSIZE> chars2 = SuperVector<VECTORSIZE>::dup_u8(c2);
     const u8 casechar = casemask.u.u8[0];
 
-    __builtin_prefetch(d -   64);
-    __builtin_prefetch(d - 2*64);
-    __builtin_prefetch(d - 3*64);
-    __builtin_prefetch(d - 4*64);
+    __builtin_prefetch(d - 16*64);
     DEBUG_PRINTF("start %p end %p \n", buf, d);
     assert(d > buf);
     if (d - S > buf) {
@@ -399,7 +381,7 @@ const u8 *rvermicelliDoubleExecReal(char c1, char c2, SuperVector<S> const casem
         while (d - S > buf) {
             DEBUG_PRINTF("aligned %p \n", d);
             // On large packet buffers, this prefetch appears to get us about 2%.
-            __builtin_prefetch(d - 64);
+            __builtin_prefetch(d - 16*64);
 
             d -= S;
             SuperVector<S> data = SuperVector<S>::load(d);
@@ -442,10 +424,7 @@ static const u8 *vermicelliDoubleMaskedExecReal(u8 const c1, u8 const c2, u8 con
     const SuperVector<VECTORSIZE> mask1 = SuperVector<VECTORSIZE>::dup_u8(m1);
     const SuperVector<VECTORSIZE> mask2 = SuperVector<VECTORSIZE>::dup_u8(m2);
 
-    __builtin_prefetch(d +   64);
-    __builtin_prefetch(d + 2*64);
-    __builtin_prefetch(d + 3*64);
-    __builtin_prefetch(d + 4*64);
+    __builtin_prefetch(d + 16*64);
     DEBUG_PRINTF("start %p end %p \n", d, buf_end);
     assert(d < buf_end);
     if (d + S < buf_end) {
@@ -460,7 +439,7 @@ static const u8 *vermicelliDoubleMaskedExecReal(u8 const c1, u8 const c2, u8 con
         }
 
         while(d + S < buf_end) {
-            __builtin_prefetch(d + 64);
+            __builtin_prefetch(d + 16*64);
             DEBUG_PRINTF("d %p \n", d);
             SuperVector<S> data = SuperVector<S>::load(d);
             rv = vermicelliDoubleMaskedBlock(data, chars1, chars2, mask1, mask2, c1, c2, m1, m2, d + S, S);
