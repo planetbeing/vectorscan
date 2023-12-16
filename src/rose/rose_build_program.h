@@ -34,7 +34,7 @@
 #include "util/bytecode_ptr.h"
 #include "util/hash.h"
 
-#include <unordered_map>
+#include <ankerl/unordered_dense.h>
 #include <vector>
 
 #include <boost/range/adaptor/map.hpp>
@@ -161,7 +161,7 @@ struct ProgramBuild : noncopyable {
 
     /** \brief Mapping from vertex to key, for vertices with a
      * CHECK_NOT_HANDLED instruction. */
-    std::unordered_map<RoseVertex, u32> handledKeys;
+    ankerl::unordered_dense::map<RoseVertex, u32> handledKeys;
 
     /** \brief Mapping from Rose literal ID to anchored program index. */
     std::map<u32, u32> anchored_programs;
@@ -171,7 +171,7 @@ struct ProgramBuild : noncopyable {
 
     /** \brief Mapping from every vertex to the groups that must be on for that
      * vertex to be reached. */
-    std::unordered_map<RoseVertex, rose_group> vertex_group_map;
+    ankerl::unordered_dense::map<RoseVertex, rose_group> vertex_group_map;
 
     /** \brief Global bitmap of groups that can be squashed. */
     rose_group squashable_groups = 0;
@@ -237,7 +237,7 @@ RoseProgram makeLiteralProgram(const RoseBuildImpl &build,
                     const std::map<RoseVertex, left_build_info> &leftfix_info,
                     const std::map<suffix_id, u32> &suffixes,
                     const std::map<u32, engine_info> &engine_info_by_queue,
-                    const std::unordered_map<RoseVertex, u32> &roleStateIndices,
+                    const ankerl::unordered_dense::map<RoseVertex, u32> &roleStateIndices,
                     ProgramBuild &prog_build, u32 lit_id,
                     const std::vector<RoseEdge> &lit_edges,
                     bool is_anchored_replay_program);

@@ -35,6 +35,9 @@ if(${RAGEL} STREQUAL "RAGEL-NOTFOUND")
     message(FATAL_ERROR "Ragel state machine compiler not found")
 endif()
 
+find_package(unordered_dense CONFIG REQUIRED)
+link_libraries(unordered_dense::unordered_dense)
+
 # Build type check
 
 if (NOT CMAKE_BUILD_TYPE)

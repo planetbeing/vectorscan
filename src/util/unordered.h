@@ -36,16 +36,15 @@
 
 #include "hash.h"
 
-#include <unordered_set>
-#include <unordered_map>
+#include <ankerl/unordered_dense.h>
 
 namespace ue2 {
 
 template<class Key, class Hash = ue2_hasher>
-using ue2_unordered_set = std::unordered_set<Key, Hash>;
+using ue2_unordered_set = ankerl::unordered_dense::set<Key, Hash>;
 
 template<class Key, class T, class Hash = ue2_hasher>
-using ue2_unordered_map = std::unordered_map<Key, T, Hash>;
+using ue2_unordered_map = ankerl::unordered_dense::map<Key, T, Hash>;
 
 } // namespace ue2
 

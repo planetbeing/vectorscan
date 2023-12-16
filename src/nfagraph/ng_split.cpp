@@ -63,8 +63,8 @@ void clearAccepts(NGHolder &g) {
 
 static
 void filterSplitMap(const NGHolder &g,
-                    unordered_map<NFAVertex, NFAVertex> *out_map) {
-    unordered_set<NFAVertex> verts;
+                    ankerl::unordered_dense::map<NFAVertex, NFAVertex> *out_map) {
+    ankerl::unordered_dense::set<NFAVertex> verts;
     insert(&verts, vertices(g));
     auto it = out_map->begin();
     while (it != out_map->end()) {
@@ -79,7 +79,7 @@ void filterSplitMap(const NGHolder &g,
 static
 void splitLHS(const NGHolder &base, const vector<NFAVertex> &pivots,
               const vector<NFAVertex> &rhs_pivots, NGHolder *lhs,
-              unordered_map<NFAVertex, NFAVertex> *lhs_map) {
+              ankerl::unordered_dense::map<NFAVertex, NFAVertex> *lhs_map) {
     assert(lhs && lhs_map);
 
     cloneHolder(*lhs, base, lhs_map);
@@ -131,7 +131,7 @@ void splitLHS(const NGHolder &base, const vector<NFAVertex> &pivots,
 }
 
 void splitLHS(const NGHolder &base, NFAVertex pivot,
-              NGHolder *lhs, unordered_map<NFAVertex, NFAVertex> *lhs_map) {
+              NGHolder *lhs, ankerl::unordered_dense::map<NFAVertex, NFAVertex> *lhs_map) {
     vector<NFAVertex> pivots(1, pivot);
     vector<NFAVertex> rhs_pivots;
     insert(&rhs_pivots, rhs_pivots.end(), adjacent_vertices(pivot, base));
@@ -139,7 +139,7 @@ void splitLHS(const NGHolder &base, NFAVertex pivot,
 }
 
 void splitRHS(const NGHolder &base, const vector<NFAVertex> &pivots,
-              NGHolder *rhs, unordered_map<NFAVertex, NFAVertex> *rhs_map) {
+              NGHolder *rhs, ankerl::unordered_dense::map<NFAVertex, NFAVertex> *rhs_map) {
     assert(rhs && rhs_map);
 
     cloneHolder(*rhs, base, rhs_map);
@@ -211,8 +211,8 @@ void findCommonSuccessors(const NGHolder &g, const vector<NFAVertex> &pivots,
 }
 
 void splitGraph(const NGHolder &base, const vector<NFAVertex> &pivots,
-                NGHolder *lhs, unordered_map<NFAVertex, NFAVertex> *lhs_map,
-                NGHolder *rhs, unordered_map<NFAVertex, NFAVertex> *rhs_map) {
+                NGHolder *lhs, ankerl::unordered_dense::map<NFAVertex, NFAVertex> *lhs_map,
+                NGHolder *rhs, ankerl::unordered_dense::map<NFAVertex, NFAVertex> *rhs_map) {
     DEBUG_PRINTF("splitting graph at %zu vertices\n", pivots.size());
 
     assert(!has_parallel_edge(base));
@@ -235,8 +235,8 @@ void splitGraph(const NGHolder &base, const vector<NFAVertex> &pivots,
 }
 
 void splitGraph(const NGHolder &base, NFAVertex pivot,
-                NGHolder *lhs, unordered_map<NFAVertex, NFAVertex> *lhs_map,
-                NGHolder *rhs, unordered_map<NFAVertex, NFAVertex> *rhs_map) {
+                NGHolder *lhs, ankerl::unordered_dense::map<NFAVertex, NFAVertex> *lhs_map,
+                NGHolder *rhs, ankerl::unordered_dense::map<NFAVertex, NFAVertex> *rhs_map) {
     vector<NFAVertex> pivots(1, pivot);
     splitGraph(base, pivots, lhs, lhs_map, rhs, rhs_map);
 }

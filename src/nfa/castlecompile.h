@@ -44,7 +44,7 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <unordered_map>
+#include <ankerl/unordered_dense.h>
 #include <vector>
 
 struct NFA;
@@ -90,7 +90,7 @@ struct CastleProto {
     std::map<u32, PureRepeat> repeats;
 
     /** \brief Mapping from report to associated tops. */
-    std::unordered_map<ReportID, flat_set<u32>> report_map;
+    ankerl::unordered_dense::map<ReportID, flat_set<u32>> report_map;
 
     /**
      * \brief Next top id to use. Repeats may be removed without top remapping,

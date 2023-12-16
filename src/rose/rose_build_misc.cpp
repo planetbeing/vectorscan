@@ -999,8 +999,8 @@ bool canImplementGraphs(const RoseBuildImpl &tbi) {
 bool hasOrphanedTops(const RoseBuildImpl &build) {
     const RoseGraph &g = build.g;
 
-    unordered_map<left_id, set<u32>> leftfixes;
-    unordered_map<suffix_id, set<u32>> suffixes;
+    ankerl::unordered_dense::map<left_id, set<u32>> leftfixes;
+    ankerl::unordered_dense::map<suffix_id, set<u32>> suffixes;
 
     for (auto v : vertices_range(g)) {
         if (g[v].left) {

@@ -447,7 +447,7 @@ void assignGroupsToRoles(RoseBuildImpl &build) {
  * groups switched on by all of the paths leading up to (and including) v from
  * the start vertexes.
  */
-unordered_map<RoseVertex, rose_group>
+ankerl::unordered_dense::map<RoseVertex, rose_group>
 getVertexGroupMap(const RoseBuildImpl &build) {
     const RoseGraph &g = build.g;
     vector<RoseVertex> v_order;
@@ -455,7 +455,7 @@ getVertexGroupMap(const RoseBuildImpl &build) {
 
     boost::topological_sort(g, back_inserter(v_order));
 
-    unordered_map<RoseVertex, rose_group> vertex_group_map;
+    ankerl::unordered_dense::map<RoseVertex, rose_group> vertex_group_map;
     vertex_group_map.reserve(num_vertices(g));
 
     const rose_group initial_groups = build.getInitialGroups();

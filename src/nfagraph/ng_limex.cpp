@@ -58,8 +58,7 @@
 
 #include <algorithm>
 #include <map>
-#include <unordered_map>
-#include <unordered_set>
+#include <ankerl/unordered_dense.h>
 #include <vector>
 
 #include <boost/range/adaptor/map.hpp>
@@ -75,8 +74,8 @@ namespace ue2 {
 // Only used in assertions.
 static
 bool sanityCheckGraph(const NGHolder &g,
-                      const unordered_map<NFAVertex, u32> &state_ids) {
-    unordered_set<u32> seen_states;
+                      const ankerl::unordered_dense::map<NFAVertex, u32> &state_ids) {
+    ankerl::unordered_dense::set<u32> seen_states;
 
     for (auto v : vertices_range(g)) {
         // Non-specials should have non-empty reachability.
@@ -117,7 +116,7 @@ bool sanityCheckGraph(const NGHolder &g,
 #endif
 
 static
-unordered_map<NFAVertex, NFAStateSet> findSquashStates(const NGHolder &g,
+ankerl::unordered_dense::map<NFAVertex, NFAStateSet> findSquashStates(const NGHolder &g,
                                     const vector<BoundedRepeatData> &repeats) {
     auto squashMap = findSquashers(g);
     filterSquashers(g, squashMap);
@@ -471,7 +470,7 @@ void makeTopStates(NGHolder &g, map<u32, set<NFAVertex>> &tops_out,
 static
 set<NFAVertex> findZombies(const NGHolder &h,
             const map<NFAVertex, BoundedRepeatSummary> &br_cyclic,
-            const unordered_map<NFAVertex, u32> &state_ids,
+            const ankerl::unordered_dense::map<NFAVertex, u32> &state_ids,
             const CompileContext &cc) {
     set<NFAVertex> zombies;
     if (!cc.grey.allowZombies) {
@@ -519,7 +518,7 @@ set<NFAVertex> findZombies(const NGHolder &h,
 }
 
 static
-void reverseStateOrdering(unordered_map<NFAVertex, u32> &state_ids) {
+void reverseStateOrdering(ankerl::unordered_dense::map<NFAVertex, u32> &state_ids) {
     vector<NFAVertex> ordering;
     for (auto &e : state_ids) {
         if (e.second == NO_STATE) {
@@ -572,7 +571,7 @@ prepareGraph(const NGHolder &h_in, const ReportManager *rm,
              const map<u32, u32> &fixed_depth_tops,
              const map<u32, vector<vector<CharReach>>> &triggers,
              bool impl_test_only, const CompileContext &cc,
-             unordered_map<NFAVertex, u32> &state_ids,
+             ankerl::unordered_dense::map<NFAVertex, u32> &state_ids,
              vector<BoundedRepeatData> &repeats,
              map<u32, set<NFAVertex>> &tops) {
     assert(is_triggered(h_in) || fixed_depth_tops.empty());
@@ -640,7 +639,7 @@ constructNFA(const NGHolder &h_in, const ReportManager *rm,
         assert(rm);
     }
 
-    unordered_map<NFAVertex, u32> state_ids;
+    ankerl::unordered_dense::map<NFAVertex, u32> state_ids;
     vector<BoundedRepeatData> repeats;
     map<u32, set<NFAVertex>> tops;
     unique_ptr<NGHolder> h
@@ -660,8 +659,8 @@ constructNFA(const NGHolder &h_in, const ReportManager *rm,
         br_cyclic[br.cyclic] = BoundedRepeatSummary(br.repeatMin, br.repeatMax);
     }
 
-    unordered_map<NFAVertex, NFAStateSet> reportSquashMap;
-    unordered_map<NFAVertex, NFAStateSet> squashMap;
+    ankerl::unordered_dense::map<NFAVertex, NFAStateSet> reportSquashMap;
+    ankerl::unordered_dense::map<NFAVertex, NFAStateSet> squashMap;
 
     // build map of squashed and squashers
     if (cc.grey.squashNFA) {
@@ -737,8 +736,8 @@ bytecode_ptr<NFA> constructReversedNFA_i(const NGHolder &h_in, u32 hint,
     map<u32, set<NFAVertex>> tops; /* only the standards tops for nfas */
     set<NFAVertex> zombies;
     vector<BoundedRepeatData> repeats;
-    unordered_map<NFAVertex, NFAStateSet> reportSquashMap;
-    unordered_map<NFAVertex, NFAStateSet> squashMap;
+    ankerl::unordered_dense::map<NFAVertex, NFAStateSet> reportSquashMap;
+    ankerl::unordered_dense::map<NFAVertex, NFAStateSet> squashMap;
     UNUSED bool fast = false;
 
     return generate(h, state_ids, repeats, reportSquashMap, squashMap, tops,
@@ -789,7 +788,7 @@ u32 isImplementableNFA(const NGHolder &g, const ReportManager *rm,
      * resultant NGHolder has <= NFA_MAX_STATES. If it does, we know we can
      * implement it as an NFA. */
 
-    unordered_map<NFAVertex, u32> state_ids;
+    ankerl::unordered_dense::map<NFAVertex, u32> state_ids;
     vector<BoundedRepeatData> repeats;
     map<u32, set<NFAVertex>> tops;
     unique_ptr<NGHolder> h
@@ -836,7 +835,7 @@ u32 countAccelStates(const NGHolder &g, const ReportManager *rm,
     const map<u32, u32> fixed_depth_tops; // empty
     const map<u32, vector<vector<CharReach>>> triggers; // empty
 
-    unordered_map<NFAVertex, u32> state_ids;
+    ankerl::unordered_dense::map<NFAVertex, u32> state_ids;
     vector<BoundedRepeatData> repeats;
     map<u32, set<NFAVertex>> tops;
     unique_ptr<NGHolder> h
@@ -852,8 +851,8 @@ u32 countAccelStates(const NGHolder &g, const ReportManager *rm,
 
     // Should have no bearing on accel calculation, so we leave these empty.
     const set<NFAVertex> zombies;
-    unordered_map<NFAVertex, NFAStateSet> reportSquashMap;
-    unordered_map<NFAVertex, NFAStateSet> squashMap;
+    ankerl::unordered_dense::map<NFAVertex, NFAStateSet> reportSquashMap;
+    ankerl::unordered_dense::map<NFAVertex, NFAStateSet> squashMap;
 
     return countAccelStates(*h, state_ids, repeats, reportSquashMap, squashMap,
                             tops, zombies, cc);

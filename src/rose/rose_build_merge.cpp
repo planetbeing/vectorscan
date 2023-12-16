@@ -248,7 +248,7 @@ bool dedupeLeftfixes(RoseBuildImpl &tbi) {
     for (deque<RoseVertex> &verts : roses | map_values) {
         DEBUG_PRINTF("group has %zu vertices\n", verts.size());
 
-        unordered_set<left_id> seen;
+        ankerl::unordered_dense::set<left_id> seen;
 
         for (auto jt = verts.begin(), jte = verts.end(); jt != jte; ++jt) {
             RoseVertex v = *jt;
@@ -320,7 +320,7 @@ bool is_equal(const suffix_id &s1, const suffix_id &s2) {
 void dedupeSuffixes(RoseBuildImpl &tbi) {
     DEBUG_PRINTF("deduping suffixes\n");
 
-    unordered_map<suffix_id, set<RoseVertex>> suffix_map;
+    ankerl::unordered_dense::map<suffix_id, set<RoseVertex>> suffix_map;
     map<pair<size_t, set<ReportID>>, vector<suffix_id>> part;
 
     // Collect suffixes into groups.
@@ -1784,7 +1784,7 @@ void mergeNfaLeftfixes(RoseBuildImpl &tbi, LeftfixBouquet &roses) {
 
     // We track the number of accelerable states for each graph in a map and
     // only recompute them when the graph is modified.
-    unordered_map<left_id, u32> accel_count;
+    ankerl::unordered_dense::map<left_id, u32> accel_count;
     for (const auto &rose : roses) {
         assert(rose.graph()->kind == NFA_INFIX);
         accel_count[rose] = estimatedAccelStates(tbi, *rose.graph());
@@ -2069,7 +2069,7 @@ void mergeSuffixes(RoseBuildImpl &tbi, SuffixBouquet &suffixes,
     // If this isn't an acyclic case, we track the number of accelerable states
     // for each graph in a map and only recompute them when the graph is
     // modified.
-    unordered_map<suffix_id, u32> accel_count;
+    ankerl::unordered_dense::map<suffix_id, u32> accel_count;
     if (!acyclic) {
         for (const auto &suffix : suffixes) {
             assert(suffix.graph() && suffix.graph()->kind == NFA_SUFFIX);
@@ -2401,7 +2401,7 @@ private:
 template<class RawDfa, class MergeFunctor>
 static
 void pairwiseDfaMerge(vector<RawDfa *> &dfas,
-                      unordered_map<RawDfa *, size_t> &dfa_mapping,
+                      ankerl::unordered_dense::map<RawDfa *, size_t> &dfa_mapping,
                       vector<OutfixInfo> &outfixes,
                       MergeFunctor merge_func) {
     DEBUG_PRINTF("merging group of size %zu\n", dfas.size());
@@ -2443,7 +2443,7 @@ void pairwiseDfaMerge(vector<RawDfa *> &dfas,
 template<class RawDfa, class MergeFunctor>
 static
 void chunkedDfaMerge(vector<RawDfa *> &dfas,
-                     unordered_map<RawDfa *, size_t> &dfa_mapping,
+                     ankerl::unordered_dense::map<RawDfa *, size_t> &dfa_mapping,
                      vector<OutfixInfo> &outfixes,
                      MergeFunctor merge_func) {
     DEBUG_PRINTF("begin merge of %zu dfas\n", dfas.size());
@@ -2477,7 +2477,7 @@ void mergeOutfixDfas(RoseBuildImpl &tbi, vector<raw_dfa *> &dfas) {
 
     /* key is index into outfix array as iterators, etc may be invalidated by
      * element addition. */
-    unordered_map<raw_dfa *, size_t> dfa_mapping;
+    ankerl::unordered_dense::map<raw_dfa *, size_t> dfa_mapping;
     for (size_t i = 0; i < outfixes.size(); i++) {
         auto *rdfa = outfixes[i].rdfa();
         if (rdfa) {
@@ -2521,7 +2521,7 @@ void mergeOutfixCombo(RoseBuildImpl &tbi, const ReportManager &rm,
     /* key is index into outfix array as iterators, etc may be invalidated by
      * element addition. */
     size_t new_dfas = 0;
-    unordered_map<raw_dfa *, size_t> dfa_mapping;
+    ankerl::unordered_dense::map<raw_dfa *, size_t> dfa_mapping;
     vector<raw_dfa *> dfas;
 
     for (auto it = tbi.outfixes.begin(); it != tbi.outfixes.end(); ++it) {
@@ -2572,7 +2572,7 @@ void mergeOutfixHaigs(RoseBuildImpl &tbi, vector<raw_som_dfa *> &dfas,
 
     vector<OutfixInfo> &outfixes = tbi.outfixes;
 
-    unordered_map<raw_som_dfa *, size_t> dfa_mapping;
+    ankerl::unordered_dense::map<raw_som_dfa *, size_t> dfa_mapping;
     for (size_t i = 0; i < outfixes.size(); i++) {
         auto *haig = outfixes[i].haig();
         if (haig) {
@@ -2736,7 +2736,7 @@ void updateCastleSuffix(RoseGraph &g, const shared_ptr<CastleProto> &m,
 
 static
 void mergeCastleSuffixChunk(RoseGraph &g, const vector<CastleProto *> &castles,
-            const unordered_map<CastleProto *, vector<RoseVertex>> &eng_verts) {
+            const ankerl::unordered_dense::map<CastleProto *, vector<RoseVertex>> &eng_verts) {
     if (castles.size() <= 1) {
         return;
     }
@@ -2774,7 +2774,7 @@ void mergeCastleSuffixes(RoseBuildImpl &build) {
         return;
     }
 
-    unordered_map<CastleProto *, vector<RoseVertex>> eng_verts;
+    ankerl::unordered_dense::map<CastleProto *, vector<RoseVertex>> eng_verts;
     map<CharReach, vector<CastleProto *>> by_reach;
 
     RoseGraph &g = build.g;

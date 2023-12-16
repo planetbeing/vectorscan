@@ -98,7 +98,7 @@ struct ranking_info {
 
 private:
     vector<NFAVertex> to_vertex;
-    unordered_map<NFAVertex, u32> to_rank;
+    ankerl::unordered_dense::map<NFAVertex, u32> to_rank;
 };
 }
 

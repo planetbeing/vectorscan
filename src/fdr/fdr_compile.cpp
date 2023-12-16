@@ -63,7 +63,7 @@
 #include <numeric>
 #include <set>
 #include <string>
-#include <unordered_map>
+#include <ankerl/unordered_dense.h>
 #include <unordered_set>
 #include <vector>
 
@@ -221,7 +221,7 @@ bytecode_ptr<FDR> FDRCompiler::setupFDR() {
  * small inputs and a cache for larger ones.
  */
 class Scorer {
-    unordered_map<u32, double> count_factor_cache;
+    ankerl::unordered_dense::map<u32, double> count_factor_cache;
 
     // LUT: pow(count, 1.05) for small values of count.
     static const array<double, 100> count_lut;
@@ -689,7 +689,7 @@ static
 bool checkParentLit(
             const vector<hwlmLiteral> &lits, u32 pos1,
             const unordered_set<u32> &parent_map,
-            const unordered_map<u32, unordered_set<u32>> &exception_map) {
+            const ankerl::unordered_dense::map<u32, unordered_set<u32>> &exception_map) {
     assert(pos1 < lits.size());
     const auto &lit1 = lits[pos1];
     for (const auto pos2 : parent_map) {
@@ -717,8 +717,8 @@ bool checkParentLit(
 static
 void buildSquashMask(vector<hwlmLiteral> &lits, u32 id1, u32 bucket1,
                      size_t start, const vector<pair<u32, u32>> &group,
-                     unordered_map<u32, unordered_set<u32>> &parent_map,
-                     unordered_map<u32, unordered_set<u32>> &exception_map) {
+                     ankerl::unordered_dense::map<u32, unordered_set<u32>> &parent_map,
+                     ankerl::unordered_dense::map<u32, unordered_set<u32>> &exception_map) {
     auto &lit1 = lits[id1];
     DEBUG_PRINTF("b:%u len:%zu\n", bucket1, lit1.s.length());
 
@@ -793,11 +793,11 @@ void findIncludedLits(vector<hwlmLiteral> &lits,
                       const vector<vector<pair<u32, u32>>> &lastCharMap) {
     /* Map for finding the positions of literal which includes a literal
      * in FDR hwlm literal vector. */
-    unordered_map<u32, unordered_set<u32>> parent_map;
+    ankerl::unordered_dense::map<u32, unordered_set<u32>> parent_map;
 
     /* Map for finding the positions of exception literals which could
      * sometimes match if a literal matches in FDR hwlm literal vector. */
-    unordered_map<u32, unordered_set<u32>> exception_map;
+    ankerl::unordered_dense::map<u32, unordered_set<u32>> exception_map;
     for (const auto &group : lastCharMap) {
         size_t cnt = group.size();
         if (cnt > INCLUDED_LIMIT) {

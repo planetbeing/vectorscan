@@ -41,7 +41,7 @@
 
 #include <deque>
 #include <memory>
-#include <unordered_map>
+#include <ankerl/unordered_dense.h>
 
 struct NFA;
 
@@ -69,7 +69,7 @@ public:
     /** prefix must be acting as a resetting sentinel and should be a dag (if
      * not how are we establish som?) */
     u32 getInitialResetSomSlot(const NGHolder &prefix, const NGHolder &g,
-                           const std::unordered_map<NFAVertex, u32> &region_map,
+                           const ankerl::unordered_dense::map<NFAVertex, u32> &region_map,
                            u32 last_sent_region,
                            bool *prefix_already_implemented);
 

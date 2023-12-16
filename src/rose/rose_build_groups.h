@@ -36,11 +36,11 @@
 
 #include "rose_build_impl.h"
 
-#include <unordered_map>
+#include <ankerl/unordered_dense.h>
 
 namespace ue2 {
 
-std::unordered_map<RoseVertex, rose_group>
+ankerl::unordered_dense::map<RoseVertex, rose_group>
 getVertexGroupMap(const RoseBuildImpl &build);
 
 rose_group getSquashableGroups(const RoseBuildImpl &build);

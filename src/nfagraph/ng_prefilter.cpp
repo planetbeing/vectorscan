@@ -58,7 +58,7 @@
 #include "util/graph_range.h"
 
 #include <queue>
-#include <unordered_map>
+#include <ankerl/unordered_dense.h>
 #include <unordered_set>
 
 #include <boost/range/adaptor/map.hpp>
@@ -128,10 +128,10 @@ struct RegionInfoQueueComp {
 
 static
 void findWidths(const NGHolder &g,
-                const unordered_map<NFAVertex, u32> &region_map,
+                const ankerl::unordered_dense::map<NFAVertex, u32> &region_map,
                 RegionInfo &ri) {
     NGHolder rg;
-    unordered_map<NFAVertex, NFAVertex> mapping;
+    ankerl::unordered_dense::map<NFAVertex, NFAVertex> mapping;
     fillHolder(&rg, g, ri.vertices, &mapping);
 
     // Wire our entries to start and our exits to accept.
@@ -156,7 +156,7 @@ void findWidths(const NGHolder &g,
 // acc can be either h.accept or h.acceptEod.
 static
 void markBoundaryRegions(const NGHolder &h,
-                         const unordered_map<NFAVertex, u32> &region_map,
+                         const ankerl::unordered_dense::map<NFAVertex, u32> &region_map,
                          map<u32, RegionInfo> &regions, NFAVertex acc) {
     for (auto v : inv_adjacent_vertices_range(acc, h)) {
         if (is_special(v, h)) {
@@ -175,7 +175,7 @@ void markBoundaryRegions(const NGHolder &h,
 
 static
 map<u32, RegionInfo> findRegionInfo(const NGHolder &h,
-               const unordered_map<NFAVertex, u32> &region_map) {
+               const ankerl::unordered_dense::map<NFAVertex, u32> &region_map) {
     map<u32, RegionInfo> regions;
     for (auto v : vertices_range(h)) {
         if (is_special(v, h)) {

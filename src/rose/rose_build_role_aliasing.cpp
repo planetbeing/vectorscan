@@ -155,7 +155,7 @@ public:
 private:
     /* if a vertex is worth storing, it is worth storing twice */
     set<RoseVertex> main_cont; /* deterministic iterator */
-    unordered_set<RoseVertex> hash_cont; /* member checks */
+    ankerl::unordered_dense::set<RoseVertex> hash_cont; /* member checks */
 };
 
 struct RoseAliasingInfo {
@@ -176,10 +176,10 @@ struct RoseAliasingInfo {
     }
 
     /** \brief Mapping from leftfix to vertices. */
-    unordered_map<left_id, set<RoseVertex>> rev_leftfix;
+    ankerl::unordered_dense::map<left_id, set<RoseVertex>> rev_leftfix;
 
     /** \brief Mapping from undelayed ghost to delayed vertices. */
-    unordered_map<RoseVertex, set<RoseVertex>> rev_ghost;
+    ankerl::unordered_dense::map<RoseVertex, set<RoseVertex>> rev_ghost;
 };
 
 } // namespace
@@ -755,7 +755,7 @@ void pruneReportIfUnused(const RoseBuildImpl &build, shared_ptr<NGHolder> h,
  * Castle. */
 static
 void pruneCastle(CastleProto &castle, ReportID report) {
-    unordered_set<u32> dead; // tops to remove.
+    ankerl::unordered_dense::set<u32> dead; // tops to remove.
     for (const auto &m : castle.repeats) {
         if (!contains(m.second.reports, report)) {
             dead.insert(m.first);
@@ -792,7 +792,7 @@ void updateEdgeTops(RoseGraph &g, RoseVertex v, const map<u32, u32> &top_map) {
 static
 void pruneUnusedTops(CastleProto &castle, const RoseGraph &g,
                      const set<RoseVertex> &verts) {
-    unordered_set<u32> used_tops;
+    ankerl::unordered_dense::set<u32> used_tops;
     for (auto v : verts) {
         assert(g[v].left.castle.get() == &castle);
 
@@ -1420,7 +1420,7 @@ void removeSingletonBuckets(vector<vector<RoseVertex>> &buckets) {
 
 static
 void buildInvBucketMap(const vector<vector<RoseVertex>> &buckets,
-                       unordered_map<RoseVertex, size_t> &inv) {
+                       ankerl::unordered_dense::map<RoseVertex, size_t> &inv) {
     inv.clear();
     for (size_t i = 0; i < buckets.size(); i++) {
         for (auto v : buckets[i]) {
@@ -1445,7 +1445,7 @@ void splitAndFilterBuckets(vector<vector<RoseVertex>> &buckets,
 
     // Mapping from split key value to new bucket index.
     using key_type = decltype(make_split_key(RoseGraph::null_vertex()));
-    unordered_map<key_type, size_t> dest_map;
+    ankerl::unordered_dense::map<key_type, size_t> dest_map;
     dest_map.reserve(buckets.front().size());
 
     for (const auto &bucket : buckets) {
@@ -1496,7 +1496,7 @@ void splitByLiteralTable(const RoseBuildImpl &build,
 
 static
 void splitByNeighbour(const RoseGraph &g, vector<vector<RoseVertex>> &buckets,
-                      unordered_map<RoseVertex, size_t> &inv, bool succ) {
+                      ankerl::unordered_dense::map<RoseVertex, size_t> &inv, bool succ) {
     vector<vector<RoseVertex>> extras;
     map<size_t, vector<RoseVertex>> neighbours_by_bucket;
     set<RoseVertex> picked;
@@ -1581,7 +1581,7 @@ splitDiamondMergeBuckets(CandidateSet &candidates, const RoseBuildImpl &build) {
     }
 
     // Neighbour splits require inverse map.
-    unordered_map<RoseVertex, size_t> inv;
+    ankerl::unordered_dense::map<RoseVertex, size_t> inv;
     buildInvBucketMap(buckets, inv);
 
     splitByNeighbour(g, buckets, inv, true);
@@ -2242,7 +2242,7 @@ void findUncalcLeavesCandidates(RoseBuildImpl &build,
     const RoseGraph &g = build.g;
 
     vector<RoseVertex> suffix_vertices; // vertices with suffix graphs
-    unordered_map<const NGHolder *, u32> fcount; // ref count per graph
+    ankerl::unordered_dense::map<const NGHolder *, u32> fcount; // ref count per graph
 
     for (auto v : vertices_range(g)) {
         if (g[v].suffix) {

@@ -312,7 +312,7 @@ void splitIntoComponents(unique_ptr<NGHolder> g,
     auto ug = make_undirected_graph(*g);
 
     // Filter specials and shell vertices from undirected graph.
-    unordered_set<NFAVertex> bad_vertices(
+    ankerl::unordered_dense::set<NFAVertex> bad_vertices(
         {g->start, g->startDs, g->accept, g->acceptEod});
     bad_vertices.insert(head_shell.begin(), head_shell.end());
     bad_vertices.insert(tail_shell.begin(), tail_shell.end());
@@ -344,7 +344,7 @@ void splitIntoComponents(unique_ptr<NGHolder> g,
         DEBUG_PRINTF("vertex %zu is in comp %u\n", (*g)[v].index, c);
     }
 
-    unordered_map<NFAVertex, NFAVertex> v_map; // temp map for fillHolder
+    ankerl::unordered_dense::map<NFAVertex, NFAVertex> v_map; // temp map for fillHolder
     for (auto &vv : verts) {
         // Shells are in every component.
         vv.insert(vv.end(), begin(head_shell), end(head_shell));

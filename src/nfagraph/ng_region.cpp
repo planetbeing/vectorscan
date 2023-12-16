@@ -71,7 +71,7 @@ using namespace std;
 
 namespace ue2 {
 
-using BackEdgeSet = unordered_set<NFAEdge>;
+using BackEdgeSet = ankerl::unordered_dense::set<NFAEdge>;
 using AcyclicGraph =
     boost::filtered_graph<NGHolder, bad_edge_filter<BackEdgeSet>>;
 
@@ -86,7 +86,7 @@ struct exit_info {
 
 static
 void checkAndAddExitCandidate(const AcyclicGraph &g,
-                              const unordered_set<NFAVertex> &r, NFAVertex v,
+                              const ankerl::unordered_dense::set<NFAVertex> &r, NFAVertex v,
                               vector<exit_info> &exits) {
     exit_info v_exit(v);
     auto &open = v_exit.open;
@@ -105,7 +105,7 @@ void checkAndAddExitCandidate(const AcyclicGraph &g,
 }
 
 static
-void findExits(const AcyclicGraph &g, const unordered_set<NFAVertex> &r,
+void findExits(const AcyclicGraph &g, const ankerl::unordered_dense::set<NFAVertex> &r,
                vector<exit_info> &exits) {
     exits.clear();
     for (auto v : r) {
@@ -114,7 +114,7 @@ void findExits(const AcyclicGraph &g, const unordered_set<NFAVertex> &r,
 }
 
 static
-void refineExits(const AcyclicGraph &g, const unordered_set<NFAVertex> &r,
+void refineExits(const AcyclicGraph &g, const ankerl::unordered_dense::set<NFAVertex> &r,
                  NFAVertex new_v, vector<exit_info> &exits) {
     /* new_v is no long an open edge */
     for (auto &exit : exits) {
@@ -162,8 +162,8 @@ bool exitValid(UNUSED const AcyclicGraph &g, const vector<exit_info> &exits,
 }
 
 static
-void setRegion(const unordered_set<NFAVertex> &r, u32 rid,
-               unordered_map<NFAVertex, u32> &regions) {
+void setRegion(const ankerl::unordered_dense::set<NFAVertex> &r, u32 rid,
+               ankerl::unordered_dense::map<NFAVertex, u32> &regions) {
     for (auto v : r) {
         regions[v] = rid;
     }
@@ -173,7 +173,7 @@ static
 void buildInitialCandidate(const AcyclicGraph &g,
                            vector<NFAVertex>::const_reverse_iterator &it,
                            const vector<NFAVertex>::const_reverse_iterator &ite,
-                           unordered_set<NFAVertex> &candidate,
+                           ankerl::unordered_dense::set<NFAVertex> &candidate,
                            /* in exits of prev region;
                             * out exits from candidate */
                            vector<exit_info> &exits,
@@ -223,11 +223,11 @@ void buildInitialCandidate(const AcyclicGraph &g,
 static
 void findDagLeaders(const NGHolder &h, const AcyclicGraph &g,
                     const vector<NFAVertex> &topo,
-                    unordered_map<NFAVertex, u32> &regions) {
+                    ankerl::unordered_dense::map<NFAVertex, u32> &regions) {
     assert(!topo.empty());
     u32 curr_id = 0;
     auto t_it = topo.rbegin();
-    unordered_set<NFAVertex> candidate;
+    ankerl::unordered_dense::set<NFAVertex> candidate;
     flat_set<NFAVertex> open_jumps;
     DEBUG_PRINTF("adding %zu to current\n", g[*t_it].index);
     assert(t_it != topo.rend());
@@ -273,7 +273,7 @@ void findDagLeaders(const NGHolder &h, const AcyclicGraph &g,
 static
 void mergeUnderBackEdges(const NGHolder &g, const vector<NFAVertex> &topo,
                          const BackEdgeSet &backEdges,
-                         unordered_map<NFAVertex, u32> &regions) {
+                         ankerl::unordered_dense::map<NFAVertex, u32> &regions) {
     for (const auto &e : backEdges) {
         NFAVertex u = source(e, g);
         NFAVertex v = target(e, g);
@@ -343,7 +343,7 @@ void reorderSpecials(const NGHolder &w, const AcyclicGraph &acyclic_g,
 
 static
 void liftSinks(const AcyclicGraph &acyclic_g, vector<NFAVertex> &topoOrder) {
-    unordered_set<NFAVertex> sinks;
+    ankerl::unordered_dense::set<NFAVertex> sinks;
     for (auto v : vertices_range(acyclic_g)) {
         if (is_special(v, acyclic_g)) {
             continue;
@@ -388,7 +388,7 @@ void liftSinks(const AcyclicGraph &acyclic_g, vector<NFAVertex> &topoOrder) {
         }
         NFAVertex s = *ri;
         DEBUG_PRINTF("handling sink %zu\n", acyclic_g[s].index);
-        unordered_set<NFAVertex> parents;
+        ankerl::unordered_dense::set<NFAVertex> parents;
         for (const auto &e : in_edges_range(s, acyclic_g)) {
             parents.insert(NFAVertex(source(e, acyclic_g)));
         }
@@ -440,7 +440,7 @@ vector<NFAVertex> buildTopoOrder(const NGHolder &w,
     return topoOrder;
 }
 
-unordered_map<NFAVertex, u32> assignRegions(const NGHolder &g) {
+ankerl::unordered_dense::map<NFAVertex, u32> assignRegions(const NGHolder &g) {
     assert(hasCorrectlyNumberedVertices(g));
     const u32 numVertices = num_vertices(g);
     DEBUG_PRINTF("assigning regions for %u vertices in holder\n", numVertices);
@@ -461,7 +461,7 @@ unordered_map<NFAVertex, u32> assignRegions(const NGHolder &g) {
     vector<NFAVertex> topoOrder = buildTopoOrder(g, acyclic_g, colours);
 
     // Everybody starts in region 0.
-    unordered_map<NFAVertex, u32> regions;
+    ankerl::unordered_dense::map<NFAVertex, u32> regions;
     regions.reserve(numVertices);
     for (auto v : vertices_range(g)) {
         regions.emplace(v, 0);

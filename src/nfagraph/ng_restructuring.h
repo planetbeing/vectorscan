@@ -37,7 +37,7 @@
 #include "ue2common.h"
 #include "util/flat_containers.h"
 
-#include <unordered_map>
+#include <ankerl/unordered_dense.h>
 
 namespace ue2 {
 
@@ -50,14 +50,14 @@ static constexpr u32 NO_STATE = ~0;
 /**
  * \brief Gives each participating vertex in the graph a unique state index.
  */
-std::unordered_map<NFAVertex, u32>
+ankerl::unordered_dense::map<NFAVertex, u32>
 numberStates(NGHolder &h, const flat_set<NFAVertex> &tops);
 
 /**
  * \brief Counts the number of states (vertices with state indices) in the
  * graph.
  */
-u32 countStates(const std::unordered_map<NFAVertex, u32> &state_ids);
+u32 countStates(const ankerl::unordered_dense::map<NFAVertex, u32> &state_ids);
 
 } // namespace ue2
 

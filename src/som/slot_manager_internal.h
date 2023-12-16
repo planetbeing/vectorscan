@@ -35,8 +35,7 @@
 #include "ue2common.h"
 
 #include <memory>
-#include <unordered_map>
-#include <unordered_set>
+#include <ankerl/unordered_dense.h>
 #include <vector>
 
 namespace ue2 {
@@ -44,14 +43,14 @@ namespace ue2 {
 struct InitialResetEntry {
     InitialResetEntry(std::shared_ptr<const NGHolder> sent_in,
                       std::shared_ptr<const NGHolder> body_in,
-                      const std::unordered_map<NFAVertex, u32> &body_regions_in,
+                      const ankerl::unordered_dense::map<NFAVertex, u32> &body_regions_in,
                       u32 sent_region_in, u32 first_bad_region_in)
         : sent(sent_in), body(body_in), body_regions(body_regions_in),
           sent_region(sent_region_in), first_bad_region(first_bad_region_in) {}
 
     std::shared_ptr<const NGHolder> sent;
     std::shared_ptr<const NGHolder> body;
-    std::unordered_map<NFAVertex, u32> body_regions;
+    ankerl::unordered_dense::map<NFAVertex, u32> body_regions;
     u32 sent_region;
     u32 first_bad_region; /* ~0U if it must cover the whole g */
 };
@@ -86,7 +85,7 @@ struct SlotEntryEqual {
 };
 
 struct SlotCache {
-    typedef std::unordered_set<SlotCacheEntry, SlotEntryHasher,
+    typedef ankerl::unordered_dense::set<SlotCacheEntry, SlotEntryHasher,
                                SlotEntryEqual> CacheStore;
 
     void insert(const NGHolder &prefix, const CharReach &escapes,
@@ -97,7 +96,7 @@ struct SlotCache {
 
     CacheStore store;
 
-    std::unordered_set<std::shared_ptr<const NGHolder>, NGHolderHasher,
+    ankerl::unordered_dense::set<std::shared_ptr<const NGHolder>, NGHolderHasher,
                   NGHolderEqual> initial_prefixes;
     std::vector<InitialResetInfo> initial_resets;
 };

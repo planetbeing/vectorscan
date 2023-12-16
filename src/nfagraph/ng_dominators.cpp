@@ -47,7 +47,7 @@ using boost::make_iterator_property_map;
 namespace ue2 {
 
 template <class Graph>
-unordered_map<NFAVertex, NFAVertex> calcDominators(const Graph &g,
+ankerl::unordered_dense::map<NFAVertex, NFAVertex> calcDominators(const Graph &g,
                                 typename Graph::vertex_descriptor source) {
     using Vertex = typename Graph::vertex_descriptor;
     const size_t num_verts = num_vertices(g);
@@ -69,7 +69,7 @@ unordered_map<NFAVertex, NFAVertex> calcDominators(const Graph &g,
                                               dom_map);
 
     /* Translate back to an NFAVertex map */
-    unordered_map<NFAVertex, NFAVertex> doms2;
+    ankerl::unordered_dense::map<NFAVertex, NFAVertex> doms2;
     doms2.reserve(num_verts);
     for (auto v : vertices_range(g)) {
         auto dom_of_v = doms[g[v].index];
@@ -80,12 +80,12 @@ unordered_map<NFAVertex, NFAVertex> calcDominators(const Graph &g,
     return doms2;
 }
 
-unordered_map<NFAVertex, NFAVertex> findDominators(const NGHolder &g) {
+ankerl::unordered_dense::map<NFAVertex, NFAVertex> findDominators(const NGHolder &g) {
     assert(hasCorrectlyNumberedVertices(g));
     return calcDominators(g, g.start);
 }
 
-unordered_map<NFAVertex, NFAVertex> findPostDominators(const NGHolder &g) {
+ankerl::unordered_dense::map<NFAVertex, NFAVertex> findPostDominators(const NGHolder &g) {
     assert(hasCorrectlyNumberedVertices(g));
     return calcDominators(boost::reverse_graph<NGHolder, const NGHolder &>(g),
                           g.acceptEod);

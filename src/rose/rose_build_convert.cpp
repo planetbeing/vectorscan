@@ -57,7 +57,7 @@
 #include <queue>
 #include <set>
 #include <string>
-#include <unordered_map>
+#include <ankerl/unordered_dense.h>
 #include <utility>
 #include <vector>
 
@@ -565,7 +565,7 @@ bool handleMixedPrefixCliche(const NGHolder &h, RoseGraph &g, RoseVertex v,
         assert(0);
         throw std::bad_alloc();
     }
-    unordered_map<NFAVertex, NFAVertex> rhs_map;
+    ankerl::unordered_dense::map<NFAVertex, NFAVertex> rhs_map;
     vector<NFAVertex> exits_vec;
     insert(&exits_vec, exits_vec.end(), exits);
     splitRHS(h, exits_vec, h_new.get(), &rhs_map);

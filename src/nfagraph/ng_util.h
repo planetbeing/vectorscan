@@ -43,7 +43,7 @@
 
 #include <algorithm>
 #include <map>
-#include <unordered_map>
+#include <ankerl/unordered_dense.h>
 #include <vector>
 
 namespace ue2 {
@@ -291,12 +291,12 @@ void appendLiteral(NGHolder &h, const ue2_literal &s);
  * \a in). A vertex mapping is returned in \a v_map_out. */
 void fillHolder(NGHolder *outp, const NGHolder &in,
                 const std::deque<NFAVertex> &vv,
-                std::unordered_map<NFAVertex, NFAVertex> *v_map_out);
+                ankerl::unordered_dense::map<NFAVertex, NFAVertex> *v_map_out);
 
 /** \brief Clone the graph in \a in into graph \a out, returning a vertex
  * mapping in \a v_map_out. */
 void cloneHolder(NGHolder &out, const NGHolder &in,
-                 std::unordered_map<NFAVertex, NFAVertex> *v_map_out);
+                 ankerl::unordered_dense::map<NFAVertex, NFAVertex> *v_map_out);
 
 /** \brief Clone the graph in \a in into graph \a out. */
 void cloneHolder(NGHolder &out, const NGHolder &in);

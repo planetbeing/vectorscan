@@ -54,7 +54,7 @@ namespace ue2 {
 
 static
 void makeCastle(LeftEngInfo &left,
-            unordered_map<const NGHolder *, shared_ptr<CastleProto>> &cache) {
+            ankerl::unordered_dense::map<const NGHolder *, shared_ptr<CastleProto>> &cache) {
     if (left.dfa || left.haig || left.castle) {
         return;
     }
@@ -84,7 +84,7 @@ void makeCastle(LeftEngInfo &left,
 
 static
 void makeCastleSuffix(RoseBuildImpl &tbi, RoseVertex v,
-            unordered_map<const NGHolder *, shared_ptr<CastleProto>> &cache) {
+            ankerl::unordered_dense::map<const NGHolder *, shared_ptr<CastleProto>> &cache) {
     RoseSuffixInfo &suffix = tbi.g[v].suffix;
     if (!suffix.graph) {
         return;
@@ -218,10 +218,10 @@ void makeCastles(RoseBuildImpl &tbi) {
     RoseGraph &g = tbi.g;
 
     // Caches so that we can reuse analysis on graphs we've seen already.
-    unordered_map<const NGHolder *, shared_ptr<CastleProto> > left_cache;
-    unordered_map<const NGHolder *, shared_ptr<CastleProto> > suffix_cache;
+    ankerl::unordered_dense::map<const NGHolder *, shared_ptr<CastleProto> > left_cache;
+    ankerl::unordered_dense::map<const NGHolder *, shared_ptr<CastleProto> > suffix_cache;
 
-    unordered_map<CastleProto *, vector<RoseVertex>> rev;
+    ankerl::unordered_dense::map<CastleProto *, vector<RoseVertex>> rev;
 
     for (RoseVertex v : vertices_range(g)) {
         if (g[v].left && !tbi.isRootSuccessor(v)) {
@@ -297,8 +297,8 @@ bool unmakeCastles(RoseBuildImpl &tbi) {
 }
 
 void remapCastleTops(RoseBuildImpl &tbi) {
-    unordered_map<CastleProto *, vector<RoseVertex>> rose_castles;
-    unordered_map<CastleProto *, vector<RoseVertex>> suffix_castles;
+    ankerl::unordered_dense::map<CastleProto *, vector<RoseVertex>> rose_castles;
+    ankerl::unordered_dense::map<CastleProto *, vector<RoseVertex>> suffix_castles;
 
     RoseGraph &g = tbi.g;
     for (auto v : vertices_range(g)) {

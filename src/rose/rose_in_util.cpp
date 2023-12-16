@@ -63,8 +63,8 @@ vector<RoseInVertex> topo_order(const RoseInGraph &g) {
 
 namespace {
 struct RoseEdgeCopier {
-    typedef unordered_map<const NGHolder *, shared_ptr<NGHolder>> GraphMap;
-    typedef unordered_map<const raw_som_dfa *, shared_ptr<raw_som_dfa>> HaigMap;
+    typedef ankerl::unordered_dense::map<const NGHolder *, shared_ptr<NGHolder>> GraphMap;
+    typedef ankerl::unordered_dense::map<const raw_som_dfa *, shared_ptr<raw_som_dfa>> HaigMap;
 
     RoseEdgeCopier(const RoseInGraph &g1, RoseInGraph &g2,
                    const GraphMap &graph_map_in, const HaigMap &haig_map_in)
@@ -94,8 +94,8 @@ unique_ptr<RoseInGraph> cloneRoseGraph(const RoseInGraph &ig) {
     assert(hasCorrectlyNumberedVertices(ig));
     unique_ptr<RoseInGraph> out = std::make_unique<RoseInGraph>();
 
-    unordered_map<const NGHolder *, shared_ptr<NGHolder>> graph_map;
-    unordered_map<const raw_som_dfa *, shared_ptr<raw_som_dfa>> haig_map;
+    ankerl::unordered_dense::map<const NGHolder *, shared_ptr<NGHolder>> graph_map;
+    ankerl::unordered_dense::map<const raw_som_dfa *, shared_ptr<raw_som_dfa>> haig_map;
 
     for (const auto &e : edges_range(ig)) {
         const RoseInEdgeProps &ep = ig[e];

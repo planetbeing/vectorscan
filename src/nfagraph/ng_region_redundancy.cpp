@@ -60,7 +60,7 @@ struct RegionInfo {
 static
 bool regionHasUnexpectedAccept(const NGHolder &g, const u32 region,
                        const flat_set<ReportID> &expected_reports,
-                       const unordered_map<NFAVertex, u32> &region_map) {
+                       const ankerl::unordered_dense::map<NFAVertex, u32> &region_map) {
     /* TODO: only check vertices connected to accept/acceptEOD */
     for (auto v : vertices_range(g)) {
         if (region != region_map.at(v)) {
@@ -84,7 +84,7 @@ bool regionHasUnexpectedAccept(const NGHolder &g, const u32 region,
 static
 void processCyclicStateForward(NGHolder &h, NFAVertex cyc,
                          const map<u32, RegionInfo> &info,
-                         const unordered_map<NFAVertex, u32> &region_map,
+                         const ankerl::unordered_dense::map<NFAVertex, u32> &region_map,
                          set<u32> &deadRegions) {
     u32 region = region_map.at(cyc);
     CharReach cr = h[cyc].char_reach;
@@ -130,7 +130,7 @@ void processCyclicStateForward(NGHolder &h, NFAVertex cyc,
 static
 void processCyclicStateReverse(NGHolder &h, NFAVertex cyc,
                          const map<u32, RegionInfo> &info,
-                         const unordered_map<NFAVertex, u32> &region_map,
+                         const ankerl::unordered_dense::map<NFAVertex, u32> &region_map,
                          set<u32> &deadRegions) {
     u32 region = region_map.at(cyc);
     CharReach cr = h[cyc].char_reach;
@@ -179,7 +179,7 @@ void processCyclicStateReverse(NGHolder &h, NFAVertex cyc,
 
 static
 map<u32, RegionInfo> buildRegionInfoMap(const NGHolder &g,
-                   const unordered_map<NFAVertex, u32> &region_map) {
+                   const ankerl::unordered_dense::map<NFAVertex, u32> &region_map) {
     map<u32, RegionInfo> info;
 
     for (auto v : vertices_range(g)) {

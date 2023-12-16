@@ -116,7 +116,7 @@ bool has_proper_successor(const typename Graph::vertex_descriptor &v,
 template<class Graph, class SourceCont, class OutCont>
 void find_reachable(const Graph &g, const SourceCont &sources, OutCont *out) {
     using vertex_descriptor = typename Graph::vertex_descriptor;
-    std::unordered_map<vertex_descriptor, boost::default_color_type> colours;
+    ankerl::unordered_dense::map<vertex_descriptor, boost::default_color_type> colours;
 
     for (auto v : sources) {
         boost::depth_first_visit(g, v,
@@ -134,7 +134,7 @@ void find_reachable(const Graph &g, const SourceCont &sources, OutCont *out) {
 template<class Graph, class SourceCont, class OutCont>
 void find_unreachable(const Graph &g, const SourceCont &sources, OutCont *out) {
     using vertex_descriptor = typename Graph::vertex_descriptor;
-    std::unordered_set<vertex_descriptor> reachable;
+    ankerl::unordered_dense::set<vertex_descriptor> reachable;
 
     find_reachable(g, sources, &reachable);
 

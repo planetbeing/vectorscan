@@ -186,7 +186,7 @@ public:
         return q.capacity();
     }
 private:
-    unordered_set<unsigned> ids; //!< stores id's, for uniqueness
+    ankerl::unordered_dense::set<unsigned> ids; //!< stores id's, for uniqueness
     vector<unsigned> q; //!< vector of id's that we use as FILO.
 };
 
