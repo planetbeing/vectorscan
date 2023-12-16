@@ -509,7 +509,7 @@ bool checkEodStealFloating(const RoseBuildImpl &build,
     }
 
     // Collect a set of all floating literals.
-    unordered_set<ue2_literal> floating_lits;
+    vectorscan::unordered::set<ue2_literal> floating_lits;
     for (auto &lit : build.literals) {
         if (lit.table == ROSE_FLOATING) {
             floating_lits.insert(lit.s);
@@ -1639,7 +1639,7 @@ static
 bool danglingVertexRef(RoseBuildImpl &tbi) {
     RoseGraph::vertex_iterator vi, ve;
     tie(vi, ve) = vertices(tbi.g);
-    const unordered_set<RoseVertex> valid_vertices(vi, ve);
+    const vectorscan::unordered::set<RoseVertex> valid_vertices(vi, ve);
 
     if (!contains(valid_vertices, tbi.anchored_root)) {
         DEBUG_PRINTF("anchored root vertex %zu not in graph\n",

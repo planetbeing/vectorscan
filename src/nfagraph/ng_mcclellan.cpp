@@ -51,7 +51,7 @@
 #include <functional>
 #include <map>
 #include <set>
-#include <unordered_map>
+#include "vs_unordered.h"
 #include <vector>
 
 #include <boost/dynamic_bitset.hpp>
@@ -460,7 +460,7 @@ public:
 
 struct Big_Traits {
     using StateSet = dynamic_bitset<>;
-    using StateMap = unordered_map<StateSet, dstate_id_t, hash_dynamic_bitset>;
+    using StateMap = vectorscan::unordered::map<StateSet, dstate_id_t, hash_dynamic_bitset>;
 
     static StateSet init_states(u32 num) {
         return StateSet(num);
@@ -483,7 +483,7 @@ public:
 
 struct Graph_Traits {
     using StateSet = bitfield<NFA_STATE_LIMIT>;
-    using StateMap = unordered_map<StateSet, dstate_id_t>;
+    using StateMap = vectorscan::unordered::map<StateSet, dstate_id_t>;
 
     static StateSet init_states(UNUSED u32 num) {
         assert(num <= NFA_STATE_LIMIT);

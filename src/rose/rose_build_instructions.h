@@ -66,7 +66,7 @@ public:
     /** \brief Length of the bytecode instruction in bytes. */
     virtual size_t byte_length() const = 0;
 
-    using OffsetMap = std::unordered_map<const RoseInstruction *, u32>;
+    using OffsetMap = vectorscan::unordered::map<const RoseInstruction *, u32>;
 
     /**
      * \brief Writes a concrete implementation of this instruction.

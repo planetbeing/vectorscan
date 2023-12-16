@@ -36,16 +36,15 @@
 
 #include "hash.h"
 
-#include <unordered_set>
-#include <unordered_map>
+#include "vs_unordered.h"
 
 namespace ue2 {
 
 template<class Key, class Hash = ue2_hasher>
-using ue2_unordered_set = std::unordered_set<Key, Hash>;
+using ue2_unordered_set = vectorscan::unordered::set<Key, Hash>;
 
 template<class Key, class T, class Hash = ue2_hasher>
-using ue2_unordered_map = std::unordered_map<Key, T, Hash>;
+using ue2_unordered_map = vectorscan::unordered::map<Key, T, Hash>;
 
 } // namespace ue2
 

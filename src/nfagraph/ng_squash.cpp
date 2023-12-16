@@ -111,8 +111,7 @@
 
 #include <deque>
 #include <map>
-#include <unordered_map>
-#include <unordered_set>
+#include "vs_unordered.h"
 
 #include <boost/graph/depth_first_search.hpp>
 #include <boost/graph/reverse_graph.hpp>
@@ -121,7 +120,7 @@ using namespace std;
 
 namespace ue2 {
 
-using PostDomTree = unordered_map<NFAVertex, unordered_set<NFAVertex>>;
+using PostDomTree = vectorscan::unordered::map<NFAVertex, vectorscan::unordered::set<NFAVertex>>;
 
 static
 PostDomTree buildPDomTree(const NGHolder &g) {
@@ -153,7 +152,7 @@ void buildSquashMask(NFAStateSet &mask, const NGHolder &g, NFAVertex v,
                      const CharReach &cr, const NFAStateSet &init,
                      const vector<NFAVertex> &vByIndex, const PostDomTree &tree,
                      som_type som, const vector<DepthMinMax> &som_depths,
-                     const unordered_map<NFAVertex, u32> &region_map,
+                     const vectorscan::unordered::map<NFAVertex, u32> &region_map,
                      smgb_cache &cache) {
     DEBUG_PRINTF("build base squash mask for vertex %zu)\n", g[v].index);
 
@@ -275,9 +274,9 @@ void buildPred(NFAStateSet &pred, const NGHolder &g, NFAVertex v) {
 static
 void findDerivedSquashers(const NGHolder &g, const vector<NFAVertex> &vByIndex,
                           const PostDomTree &pdom_tree, const NFAStateSet &init,
-                          unordered_map<NFAVertex, NFAStateSet> *squash,
+                          vectorscan::unordered::map<NFAVertex, NFAStateSet> *squash,
                           som_type som, const vector<DepthMinMax> &som_depths,
-                          const unordered_map<NFAVertex, u32> &region_map,
+                          const vectorscan::unordered::map<NFAVertex, u32> &region_map,
                           smgb_cache &cache) {
     deque<NFAVertex> remaining;
     for (const auto &m : *squash) {
@@ -326,7 +325,7 @@ void findDerivedSquashers(const NGHolder &g, const vector<NFAVertex> &vByIndex,
  */
 static
 void clearMutualSquashers(const NGHolder &g, const vector<NFAVertex> &vByIndex,
-                          unordered_map<NFAVertex, NFAStateSet> &squash) {
+                          vectorscan::unordered::map<NFAVertex, NFAStateSet> &squash) {
     for (auto it = squash.begin(); it != squash.end();) {
         NFAVertex a = it->first;
         u32 a_index = g[a].index;
@@ -341,13 +340,13 @@ void clearMutualSquashers(const NGHolder &g, const vector<NFAVertex> &vByIndex,
             if (b_it == squash.end()) {
                 continue;
             }
-            auto &b_squash = b_it->second;
+            auto &b_squash = const_cast<std::remove_const_t<decltype(b_it->second)> &>(b_it->second);
             if (!b_squash.test(a_index)) {
                 /* b and a squash each other, prevent this */
                 DEBUG_PRINTF("removing mutual squash %u %zu\n",
                              a_index, b_index);
                 b_squash.set(a_index);
-                it->second.set(b_index);
+                const_cast<std::remove_const_t<decltype(it->second)> &>(it->second).set(b_index);
             }
         }
 
@@ -361,9 +360,9 @@ void clearMutualSquashers(const NGHolder &g, const vector<NFAVertex> &vByIndex,
     }
 }
 
-unordered_map<NFAVertex, NFAStateSet> findSquashers(const NGHolder &g,
+vectorscan::unordered::map<NFAVertex, NFAStateSet> findSquashers(const NGHolder &g,
                                                     som_type som) {
-    unordered_map<NFAVertex, NFAStateSet> squash;
+    vectorscan::unordered::map<NFAVertex, NFAStateSet> squash;
 
     // Number of bits to use for all our masks. If we're a triggered graph,
     // tops have already been assigned, so we don't have to account for them.
@@ -378,7 +377,7 @@ unordered_map<NFAVertex, NFAStateSet> findSquashers(const NGHolder &g,
     smgb_cache cache(g);
 
     // Mappings used for SOM mode calculations, otherwise left empty.
-    unordered_map<NFAVertex, u32> region_map;
+    vectorscan::unordered::map<NFAVertex, u32> region_map;
     vector<DepthMinMax> som_depths;
     if (som) {
         region_map = assignRegions(g);
@@ -515,7 +514,7 @@ unordered_map<NFAVertex, NFAStateSet> findSquashers(const NGHolder &g,
  * -# squash only a few acyclic states
  */
 void filterSquashers(const NGHolder &g,
-                     unordered_map<NFAVertex, NFAStateSet> &squash) {
+                     vectorscan::unordered::map<NFAVertex, NFAStateSet> &squash) {
     assert(hasCorrectlyNumberedVertices(g));
 
     DEBUG_PRINTF("filtering\n");
@@ -628,7 +627,7 @@ static
 vector<NFAVertex> findUnreachable(const NGHolder &g) {
     const boost::reverse_graph<NGHolder, const NGHolder &> revg(g);
 
-    unordered_map<NFAVertex, boost::default_color_type> colours;
+    vectorscan::unordered::map<NFAVertex, boost::default_color_type> colours;
     colours.reserve(num_vertices(g));
 
     depth_first_visit(revg, g.acceptEod,
@@ -647,9 +646,9 @@ vector<NFAVertex> findUnreachable(const NGHolder &g) {
 
 /** Populates squash masks for states that can be switched off by highlander
  * (single match) reporters. */
-unordered_map<NFAVertex, NFAStateSet>
+vectorscan::unordered::map<NFAVertex, NFAStateSet>
 findHighlanderSquashers(const NGHolder &g, const ReportManager &rm) {
-    unordered_map<NFAVertex, NFAStateSet> squash;
+    vectorscan::unordered::map<NFAVertex, NFAStateSet> squash;
 
     set<NFAVertex> verts;
     getHighlanderReporters(g, g.accept, rm, verts);
@@ -670,7 +669,7 @@ findHighlanderSquashers(const NGHolder &g, const ReportManager &rm) {
         // cutting the appropriate out-edges to accept and seeing which
         // vertices become unreachable.
 
-        unordered_map<NFAVertex, NFAVertex> orig_to_copy;
+        vectorscan::unordered::map<NFAVertex, NFAVertex> orig_to_copy;
         NGHolder h;
         cloneHolder(h, g, &orig_to_copy);
         removeEdgesToAccept(h, orig_to_copy[v]);

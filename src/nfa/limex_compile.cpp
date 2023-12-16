@@ -110,19 +110,19 @@ struct precalcAccel {
 };
 
 struct limex_accel_info {
-    unordered_set<NFAVertex> accelerable;
+    vectorscan::unordered::set<NFAVertex> accelerable;
     map<NFAStateSet, precalcAccel> precalc;
-    unordered_map<NFAVertex, flat_set<NFAVertex>> friends;
-    unordered_map<NFAVertex, AccelScheme> accel_map;
+    vectorscan::unordered::map<NFAVertex, flat_set<NFAVertex>> friends;
+    vectorscan::unordered::map<NFAVertex, AccelScheme> accel_map;
 };
 
 static
-unordered_map<NFAVertex, NFAStateSet>
-reindexByStateId(const unordered_map<NFAVertex, NFAStateSet> &in,
+vectorscan::unordered::map<NFAVertex, NFAStateSet>
+reindexByStateId(const vectorscan::unordered::map<NFAVertex, NFAStateSet> &in,
                  const NGHolder &g,
-                 const unordered_map<NFAVertex, u32> &state_ids,
+                 const vectorscan::unordered::map<NFAVertex, u32> &state_ids,
                  const u32 num_states) {
-    unordered_map<NFAVertex, NFAStateSet> out;
+    vectorscan::unordered::map<NFAVertex, NFAStateSet> out;
     out.reserve(in.size());
 
     vector<u32> indexToState(num_vertices(g), NO_STATE);
@@ -153,10 +153,10 @@ reindexByStateId(const unordered_map<NFAVertex, NFAStateSet> &in,
 
 struct build_info {
     build_info(NGHolder &hi,
-               const unordered_map<NFAVertex, u32> &states_in,
+               const vectorscan::unordered::map<NFAVertex, u32> &states_in,
                const vector<BoundedRepeatData> &ri,
-               const unordered_map<NFAVertex, NFAStateSet> &rsmi,
-               const unordered_map<NFAVertex, NFAStateSet> &smi,
+               const vectorscan::unordered::map<NFAVertex, NFAStateSet> &rsmi,
+               const vectorscan::unordered::map<NFAVertex, NFAStateSet> &smi,
                const map<u32, set<NFAVertex>> &ti, const set<NFAVertex> &zi,
                bool dai, bool sci, const CompileContext &cci, u32 nsi)
         : h(hi), state_ids(states_in), repeats(ri), tops(ti), tugs(nsi),
@@ -178,12 +178,12 @@ struct build_info {
     }
 
     NGHolder &h;
-    const unordered_map<NFAVertex, u32> &state_ids;
+    const vectorscan::unordered::map<NFAVertex, u32> &state_ids;
     const vector<BoundedRepeatData> &repeats;
 
     // Squash maps; state sets are indexed by state_id.
-    unordered_map<NFAVertex, NFAStateSet> reportSquashMap;
-    unordered_map<NFAVertex, NFAStateSet> squashMap;
+    vectorscan::unordered::map<NFAVertex, NFAStateSet> reportSquashMap;
+    vectorscan::unordered::map<NFAVertex, NFAStateSet> squashMap;
 
     const map<u32, set<NFAVertex>> &tops;
     NFAStateSet tugs;
@@ -496,7 +496,7 @@ bool allow_wide_accel(const vector<NFAVertex> &vv, const NGHolder &g,
 static
 void nfaFindAccelSchemes(const NGHolder &g,
                          const map<NFAVertex, BoundedRepeatSummary> &br_cyclic,
-                         unordered_map<NFAVertex, AccelScheme> *out) {
+                         vectorscan::unordered::map<NFAVertex, AccelScheme> *out) {
     vector<CharReach> refined_cr = reduced_cr(g, br_cyclic);
 
     NFAVertex sds_or_proxy = get_sds_or_proxy(g);
@@ -521,8 +521,8 @@ void nfaFindAccelSchemes(const NGHolder &g,
 }
 
 struct fas_visitor : public boost::default_bfs_visitor {
-    fas_visitor(const unordered_map<NFAVertex, AccelScheme> &am_in,
-                unordered_map<NFAVertex, AccelScheme> *out_in)
+    fas_visitor(const vectorscan::unordered::map<NFAVertex, AccelScheme> &am_in,
+                vectorscan::unordered::map<NFAVertex, AccelScheme> *out_in)
         : accel_map(am_in), out(out_in) {}
 
     void discover_vertex(NFAVertex v, const NGHolder &) {
@@ -533,13 +533,13 @@ struct fas_visitor : public boost::default_bfs_visitor {
             throw this; /* done */
         }
     }
-    const unordered_map<NFAVertex, AccelScheme> &accel_map;
-    unordered_map<NFAVertex, AccelScheme> *out;
+    const vectorscan::unordered::map<NFAVertex, AccelScheme> &accel_map;
+    vectorscan::unordered::map<NFAVertex, AccelScheme> *out;
 };
 
 static
 void filterAccelStates(NGHolder &g, const map<u32, set<NFAVertex>> &tops,
-                       unordered_map<NFAVertex, AccelScheme> *accel_map) {
+                       vectorscan::unordered::map<NFAVertex, AccelScheme> *accel_map) {
     /* We want the NFA_MAX_ACCEL_STATES best acceleration states, everything
      * else should be ditched. We use a simple BFS to choose accel states near
      * the start. */
@@ -559,7 +559,7 @@ void filterAccelStates(NGHolder &g, const map<u32, set<NFAVertex>> &tops,
         tempEdges.emplace_back(e); // Remove edge later.
     }
 
-    unordered_map<NFAVertex, AccelScheme> out;
+    vectorscan::unordered::map<NFAVertex, AccelScheme> out;
 
     try {
         boost::breadth_first_search(g, g.start,
@@ -609,9 +609,9 @@ void fillAccelInfo(build_info &bi) {
 
     NGHolder &g = bi.h;
     limex_accel_info &accel = bi.accel;
-    unordered_map<NFAVertex, AccelScheme> &accel_map = accel.accel_map;
+    vectorscan::unordered::map<NFAVertex, AccelScheme> &accel_map = accel.accel_map;
     const map<NFAVertex, BoundedRepeatSummary> &br_cyclic = bi.br_cyclic;
-    const unordered_map<NFAVertex, u32> &state_ids = bi.state_ids;
+    const vectorscan::unordered::map<NFAVertex, u32> &state_ids = bi.state_ids;
     const u32 num_states = bi.num_states;
 
     nfaFindAccelSchemes(g, br_cyclic, &accel_map);
@@ -708,7 +708,7 @@ typedef vector<AccelAux, AlignedAllocator<AccelAux, alignof(AccelAux)>>
 
 static
 u32 getEffectiveAccelStates(const build_info &args,
-                            const unordered_map<NFAVertex, NFAVertex> &dom_map,
+                            const vectorscan::unordered::map<NFAVertex, NFAVertex> &dom_map,
                             u32 active_accel_mask,
                             const vector<AccelBuild> &accelStates) {
     /* accelStates is indexed by the acceleration bit index and contains a
@@ -1136,7 +1136,7 @@ u32 uncompressedStateSize(u32 num_states) {
 
 static
 u32 compressedStateSize(const NGHolder &h, const NFAStateSet &maskedStates,
-                        const unordered_map<NFAVertex, u32> &state_ids) {
+                        const vectorscan::unordered::map<NFAVertex, u32> &state_ids) {
     // Shrink state requirement to enough to fit the compressed largest reach.
     vector<u32> allreach(N_CHARS, 0);
 
@@ -1207,7 +1207,7 @@ bool hasSquashableInitDs(const build_info &args) {
 
 static
 bool hasInitDsStates(const NGHolder &h,
-                     const unordered_map<NFAVertex, u32> &state_ids) {
+                     const vectorscan::unordered::map<NFAVertex, u32> &state_ids) {
     if (state_ids.at(h.startDs) != NO_STATE) {
         return true;
     }
@@ -1376,15 +1376,15 @@ struct ExceptionProto {
 
 static
 u32 buildExceptionMap(const build_info &args, ReportListCache &reports_cache,
-                      const unordered_set<NFAEdge> &exceptional,
+                      const vectorscan::unordered::set<NFAEdge> &exceptional,
                       map<ExceptionProto, vector<u32>> &exceptionMap,
                       vector<ReportID> &reportList) {
     const NGHolder &h = args.h;
     const u32 num_states = args.num_states;
     u32 exceptionCount = 0;
 
-    unordered_map<NFAVertex, u32> pos_trigger;
-    unordered_map<NFAVertex, u32> tug_trigger;
+    vectorscan::unordered::map<NFAVertex, u32> pos_trigger;
+    vectorscan::unordered::map<NFAVertex, u32> tug_trigger;
 
     for (u32 i = 0; i < args.repeats.size(); i++) {
         const BoundedRepeatData &br = args.repeats[i];
@@ -1904,7 +1904,7 @@ struct Factory {
 
     static
     void findExceptionalTransitions(const build_info &args,
-                                    unordered_set<NFAEdge> &exceptional,
+                                    vectorscan::unordered::set<NFAEdge> &exceptional,
                                     u32 maxShift) {
         const NGHolder &h = args.h;
 
@@ -2235,7 +2235,7 @@ struct Factory {
         // list in case we can reuse them.
         ReportListCache reports_cache;
 
-        unordered_set<NFAEdge> exceptional;
+        vectorscan::unordered::set<NFAEdge> exceptional;
         u32 shiftCount = findBestNumOfVarShifts(args);
         assert(shiftCount);
         u32 maxShift = findMaxVarShift(args, shiftCount);
@@ -2439,10 +2439,10 @@ MAKE_LIMEX_TRAITS(512)
 // Some sanity tests, called by an assertion in generate().
 static UNUSED
 bool isSane(const NGHolder &h, const map<u32, set<NFAVertex>> &tops,
-            const unordered_map<NFAVertex, u32> &state_ids,
+            const vectorscan::unordered::map<NFAVertex, u32> &state_ids,
             u32 num_states) {
-    unordered_set<u32> seen;
-    unordered_set<NFAVertex> top_starts;
+    vectorscan::unordered::set<u32> seen;
+    vectorscan::unordered::set<NFAVertex> top_starts;
     for (const auto &vv : tops | map_values) {
         insert(&top_starts, vv);
     }
@@ -2497,7 +2497,7 @@ bool isFast(const build_info &args) {
         return false;
     }
 
-    unordered_map<NFAVertex, bool> pos_trigger;
+    vectorscan::unordered::map<NFAVertex, bool> pos_trigger;
     for (u32 i = 0; i < args.repeats.size(); i++) {
         const BoundedRepeatData &br = args.repeats[i];
         assert(!contains(pos_trigger, br.pos_trigger));
@@ -2510,7 +2510,7 @@ bool isFast(const build_info &args) {
     }
 
     vector<NFAVertex> cur;
-    unordered_set<NFAVertex> visited;
+    vectorscan::unordered::set<NFAVertex> visited;
     for (const auto &m : args.tops) {
         for (NFAVertex v : m.second) {
             cur.emplace_back(v);
@@ -2551,7 +2551,7 @@ bool isFast(const build_info &args) {
 }
 
 static
-u32 max_state(const unordered_map<NFAVertex, u32> &state_ids) {
+u32 max_state(const vectorscan::unordered::map<NFAVertex, u32> &state_ids) {
     u32 rv = 0;
     for (const auto &m : state_ids) {
         DEBUG_PRINTF("state %u\n", m.second);
@@ -2564,10 +2564,10 @@ u32 max_state(const unordered_map<NFAVertex, u32> &state_ids) {
 }
 
 bytecode_ptr<NFA> generate(NGHolder &h,
-                const unordered_map<NFAVertex, u32> &states,
+                const vectorscan::unordered::map<NFAVertex, u32> &states,
                 const vector<BoundedRepeatData> &repeats,
-                const unordered_map<NFAVertex, NFAStateSet> &reportSquashMap,
-                const unordered_map<NFAVertex, NFAStateSet> &squashMap,
+                const vectorscan::unordered::map<NFAVertex, NFAStateSet> &reportSquashMap,
+                const vectorscan::unordered::map<NFAVertex, NFAStateSet> &squashMap,
                 const map<u32, set<NFAVertex>> &tops,
                 const set<NFAVertex> &zombies, bool do_accel,
                 bool stateCompression, bool &fast, u32 hint,
@@ -2635,10 +2635,10 @@ bytecode_ptr<NFA> generate(NGHolder &h,
 }
 
 u32 countAccelStates(NGHolder &h,
-                const unordered_map<NFAVertex, u32> &states,
+                const vectorscan::unordered::map<NFAVertex, u32> &states,
                 const vector<BoundedRepeatData> &repeats,
-                const unordered_map<NFAVertex, NFAStateSet> &reportSquashMap,
-                const unordered_map<NFAVertex, NFAStateSet> &squashMap,
+                const vectorscan::unordered::map<NFAVertex, NFAStateSet> &reportSquashMap,
+                const vectorscan::unordered::map<NFAVertex, NFAStateSet> &squashMap,
                 const map<u32, set<NFAVertex>> &tops,
                 const set<NFAVertex> &zombies,
                 const CompileContext &cc) {

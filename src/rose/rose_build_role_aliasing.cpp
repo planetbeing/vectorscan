@@ -50,6 +50,7 @@
 #include "util/graph_range.h"
 #include "util/hash.h"
 #include "util/order_check.h"
+#include "vs_unordered.h"
 
 #include <algorithm>
 #include <numeric>
@@ -65,40 +66,44 @@ namespace ue2 {
 static constexpr size_t MERGE_GROUP_SIZE_MAX = 200;
 
 namespace {
+
+struct EdgeAndVertexHash;
+
 // Used for checking edge sets (both in- and out-) against each other.
 struct EdgeAndVertex {
     EdgeAndVertex(const RoseEdge &e, const RoseVertex v_,
-                  const RoseGraph &g) : v(v_), eprops(g[e]) {}
+                  const RoseGraph &g) : v(v_), eprops(&g[e]) {}
     virtual ~EdgeAndVertex() {}
 
     virtual bool operator<(const EdgeAndVertex &a) const {
         if (v != a.v) {
             return v < a.v;
         }
-        if (eprops.minBound != a.eprops.minBound) {
-            return eprops.minBound < a.eprops.minBound;
+        if (eprops->minBound != a.eprops->minBound) {
+            return eprops->minBound < a.eprops->minBound;
         }
-        if (eprops.maxBound != a.eprops.maxBound) {
-            return eprops.maxBound < a.eprops.maxBound;
+        if (eprops->maxBound != a.eprops->maxBound) {
+            return eprops->maxBound < a.eprops->maxBound;
         }
-        if (eprops.rose_top != a.eprops.rose_top) {
-            return eprops.rose_top < a.eprops.rose_top;
+        if (eprops->rose_top != a.eprops->rose_top) {
+            return eprops->rose_top < a.eprops->rose_top;
 
         }
-        return eprops.history < a.eprops.history;
+        return eprops->history < a.eprops->history;
     }
 
     virtual bool operator==(const EdgeAndVertex &a) const {
         return v == a.v &&
-               eprops.minBound == a.eprops.minBound &&
-               eprops.maxBound == a.eprops.maxBound &&
-               eprops.rose_top == a.eprops.rose_top &&
-               eprops.history == a.eprops.history;
+               eprops->minBound == a.eprops->minBound &&
+               eprops->maxBound == a.eprops->maxBound &&
+               eprops->rose_top == a.eprops->rose_top &&
+               eprops->history == a.eprops->history;
     }
 
 private:
     RoseVertex v;
-    const RoseEdgeProps &eprops;
+    const RoseEdgeProps *eprops;
+    friend struct EdgeAndVertexHash;
 };
 
 struct AliasOutEdge : EdgeAndVertex {
@@ -109,6 +114,18 @@ struct AliasOutEdge : EdgeAndVertex {
 struct AliasInEdge : EdgeAndVertex {
     AliasInEdge(const RoseEdge &e, const RoseGraph &g) :
         EdgeAndVertex(e, source(e, g), g) {}
+};
+
+struct EdgeAndVertexHash {
+    size_t operator()(const EdgeAndVertex &f) const {
+        size_t v = 0;
+        hash_combine(v, f.v.hash());
+        hash_combine(v, f.eprops->minBound);
+        hash_combine(v, f.eprops->maxBound);
+        hash_combine(v, f.eprops->rose_top);
+        hash_combine(v, f.eprops->history);
+        return v;
+    }
 };
 
 class CandidateSet {
@@ -155,7 +172,7 @@ public:
 private:
     /* if a vertex is worth storing, it is worth storing twice */
     set<RoseVertex> main_cont; /* deterministic iterator */
-    unordered_set<RoseVertex> hash_cont; /* member checks */
+    vectorscan::unordered::set<RoseVertex> hash_cont; /* member checks */
 };
 
 struct RoseAliasingInfo {
@@ -176,10 +193,10 @@ struct RoseAliasingInfo {
     }
 
     /** \brief Mapping from leftfix to vertices. */
-    unordered_map<left_id, set<RoseVertex>> rev_leftfix;
+    vectorscan::unordered::map<left_id, set<RoseVertex>> rev_leftfix;
 
     /** \brief Mapping from undelayed ghost to delayed vertices. */
-    unordered_map<RoseVertex, set<RoseVertex>> rev_ghost;
+    vectorscan::unordered::map<RoseVertex, set<RoseVertex>> rev_ghost;
 };
 
 } // namespace
@@ -239,7 +256,7 @@ bool samePredecessors(RoseVertex a, RoseVertex b, const RoseGraph &g) {
         return false;
     }
 
-    set<AliasInEdge> preds_a, preds_b;
+    vectorscan::unordered::set<AliasInEdge, EdgeAndVertexHash> preds_a, preds_b;
 
     for (const auto &e : in_edges_range(a, g)) {
         preds_a.insert(AliasInEdge(e, g));
@@ -389,6 +406,48 @@ bool sameGhostProperties(const RoseBuildImpl &build,
 }
 
 static
+uint8_t cachedRoleProperties(const RoseBuildImpl &build, RoseVertex v) {
+    auto &role_properties_cache = v.role_properties_cache();
+    if (role_properties_cache) {
+        return *role_properties_cache;
+    }
+
+    auto &in_properties_cache = v.in_properties_cache();
+    auto &out_properties_cache = v.out_properties_cache();
+    if (unlikely(in_properties_cache && out_properties_cache)) {
+        const auto cached = *in_properties_cache | *out_properties_cache;
+        role_properties_cache = cached;
+        return *role_properties_cache;
+    }
+
+    if (!in_properties_cache) {
+        // We certainly don't want to merge root roles with non-root roles.
+        /* TODO: explain */
+        if (build.isRootSuccessor(v)) {
+            in_properties_cache = 1;
+        } else {
+            in_properties_cache = 0;
+        }
+    }
+
+    if (!out_properties_cache) {
+        const RoseGraph &g = build.g;
+        // We don't want to merge a role with LAST_BYTE history with one without,
+        // as a role that can only be triggered at EOD cannot safely precede
+        // "ordinary" roles.
+        if (hasLastByteHistorySucc(g, v)) {
+            out_properties_cache = 2;
+        } else {
+            out_properties_cache = 0;
+        }
+    }
+
+    const auto cached = *in_properties_cache | *out_properties_cache;
+    role_properties_cache = cached;
+    return cached;
+}
+
+static
 bool sameRoleProperties(const RoseBuildImpl &build, const RoseAliasingInfo &rai,
                         RoseVertex a, RoseVertex b) {
     const RoseGraph &g = build.g;
@@ -398,20 +457,11 @@ bool sameRoleProperties(const RoseBuildImpl &build, const RoseAliasingInfo &rai,
         return false;
     }
 
-    // We don't want to merge a role with LAST_BYTE history with one without,
-    // as a role that can only be triggered at EOD cannot safely precede
-    // "ordinary" roles.
-    if (hasLastByteHistorySucc(g, a) != hasLastByteHistorySucc(g, b)) {
-        return false;
-    }
-
-    // We certainly don't want to merge root roles with non-root roles.
-    /* TODO: explain */
-    if (build.isRootSuccessor(a) != build.isRootSuccessor(b)) {
-        return false;
-    }
-
     if (aprops.som_adjust != bprops.som_adjust) {
+        return false;
+    }
+
+    if (cachedRoleProperties(build, a) != cachedRoleProperties(build, b)) {
         return false;
     }
 
@@ -478,7 +528,7 @@ void mergeEdgeAdd(RoseVertex u, RoseVertex v, const RoseEdge &from_edge,
 static
 void mergeEdges(RoseVertex a, RoseVertex b, RoseGraph &g) {
     // All the edges to or from b for quick lookup.
-    typedef map<RoseVertex, RoseEdge> EdgeCache;
+    typedef vectorscan::unordered::map<RoseVertex, RoseEdge> EdgeCache;
     EdgeCache b_edges;
 
     // Cache b's in-edges so we can look them up by source quickly.
@@ -755,7 +805,7 @@ void pruneReportIfUnused(const RoseBuildImpl &build, shared_ptr<NGHolder> h,
  * Castle. */
 static
 void pruneCastle(CastleProto &castle, ReportID report) {
-    unordered_set<u32> dead; // tops to remove.
+    vectorscan::unordered::set<u32> dead; // tops to remove.
     for (const auto &m : castle.repeats) {
         if (!contains(m.second.reports, report)) {
             dead.insert(m.first);
@@ -792,7 +842,7 @@ void updateEdgeTops(RoseGraph &g, RoseVertex v, const map<u32, u32> &top_map) {
 static
 void pruneUnusedTops(CastleProto &castle, const RoseGraph &g,
                      const set<RoseVertex> &verts) {
-    unordered_set<u32> used_tops;
+    vectorscan::unordered::set<u32> used_tops;
     for (auto v : verts) {
         assert(g[v].left.castle.get() == &castle);
 
@@ -1420,7 +1470,7 @@ void removeSingletonBuckets(vector<vector<RoseVertex>> &buckets) {
 
 static
 void buildInvBucketMap(const vector<vector<RoseVertex>> &buckets,
-                       unordered_map<RoseVertex, size_t> &inv) {
+                       vectorscan::unordered::map<RoseVertex, size_t> &inv) {
     inv.clear();
     for (size_t i = 0; i < buckets.size(); i++) {
         for (auto v : buckets[i]) {
@@ -1445,7 +1495,7 @@ void splitAndFilterBuckets(vector<vector<RoseVertex>> &buckets,
 
     // Mapping from split key value to new bucket index.
     using key_type = decltype(make_split_key(RoseGraph::null_vertex()));
-    unordered_map<key_type, size_t> dest_map;
+    vectorscan::unordered::map<key_type, size_t> dest_map;
     dest_map.reserve(buckets.front().size());
 
     for (const auto &bucket : buckets) {
@@ -1496,7 +1546,7 @@ void splitByLiteralTable(const RoseBuildImpl &build,
 
 static
 void splitByNeighbour(const RoseGraph &g, vector<vector<RoseVertex>> &buckets,
-                      unordered_map<RoseVertex, size_t> &inv, bool succ) {
+                      vectorscan::unordered::map<RoseVertex, size_t> &inv, bool succ) {
     vector<vector<RoseVertex>> extras;
     map<size_t, vector<RoseVertex>> neighbours_by_bucket;
     set<RoseVertex> picked;
@@ -1581,7 +1631,7 @@ splitDiamondMergeBuckets(CandidateSet &candidates, const RoseBuildImpl &build) {
     }
 
     // Neighbour splits require inverse map.
-    unordered_map<RoseVertex, size_t> inv;
+    vectorscan::unordered::map<RoseVertex, size_t> inv;
     buildInvBucketMap(buckets, inv);
 
     splitByNeighbour(g, buckets, inv, true);
@@ -1726,10 +1776,12 @@ void getLeftMergeSiblings(const RoseBuildImpl &build, RoseVertex a,
     if (pred == RoseGraph::null_vertex() || build.isAnyStart(pred) ||
         out_degree(pred, g) > verts.size()) {
         // Select sibling from amongst the vertices that share a literal.
+        siblings.reserve(verts.size());
         insert(&siblings, siblings.end(), verts);
     } else {
         // Select sibling from amongst the vertices that share a
         // predecessor.
+        siblings.reserve(out_degree(pred, g));
         insert(&siblings, siblings.end(), adjacent_vertices(pred, g));
     }
 }
@@ -2242,7 +2294,7 @@ void findUncalcLeavesCandidates(RoseBuildImpl &build,
     const RoseGraph &g = build.g;
 
     vector<RoseVertex> suffix_vertices; // vertices with suffix graphs
-    unordered_map<const NGHolder *, u32> fcount; // ref count per graph
+    vectorscan::unordered::map<const NGHolder *, u32> fcount; // ref count per graph
 
     for (auto v : vertices_range(g)) {
         if (g[v].suffix) {

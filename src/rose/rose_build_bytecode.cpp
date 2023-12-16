@@ -146,17 +146,17 @@ struct build_context : noncopyable {
 
     /** \brief Simple cache of programs written to engine blob, used for
      * deduplication. */
-    unordered_map<RoseProgram, u32, RoseProgramHash,
+    vectorscan::unordered::map<RoseProgram, u32, RoseProgramHash,
                   RoseProgramEquivalence> program_cache;
 
     /** \brief State indices, for those roles that have them.
      * Each vertex present has a unique state index in the range
      * [0, roleStateIndices.size()). */
-    unordered_map<RoseVertex, u32> roleStateIndices;
+    vectorscan::unordered::map<RoseVertex, u32> roleStateIndices;
 
     /** \brief Mapping from queue index to bytecode offset for built engines
      * that have already been pushed into the engine_blob. */
-    unordered_map<u32, u32> engineOffsets;
+    vectorscan::unordered::map<u32, u32> engineOffsets;
 
     /** \brief List of long literals (ones with CHECK_LONG_LIT instructions)
      * that need hash table support. */
@@ -2306,7 +2306,7 @@ bool hasMpvTrigger(const set<u32> &reports, const ReportManager &rm) {
 static
 bool anyEndfixMpvTriggers(const RoseBuildImpl &build) {
     const RoseGraph &g = build.g;
-    unordered_set<suffix_id> done;
+    vectorscan::unordered::set<suffix_id> done;
 
     /* suffixes */
     for (auto v : vertices_range(g)) {
@@ -2591,11 +2591,11 @@ void makeBoundaryPrograms(const RoseBuildImpl &build, build_context &bc,
 }
 
 static
-unordered_map<RoseVertex, u32> assignStateIndices(const RoseBuildImpl &build) {
+vectorscan::unordered::map<RoseVertex, u32> assignStateIndices(const RoseBuildImpl &build) {
     const auto &g = build.g;
 
     u32 state = 0;
-    unordered_map<RoseVertex, u32> roleStateIndices;
+    vectorscan::unordered::map<RoseVertex, u32> roleStateIndices;
     for (auto v : vertices_range(g)) {
         // Virtual vertices (starts, EOD accept vertices) never need state
         // indices.
@@ -2645,7 +2645,7 @@ void buildLeftInfoTable(const RoseBuildImpl &tbi, build_context &bc,
     const RoseGraph &g = tbi.g;
     const CompileContext &cc = tbi.cc;
 
-    unordered_set<u32> done_core;
+    vectorscan::unordered::set<u32> done_core;
 
     leftTable.resize(leftfixCount);
 
@@ -2874,7 +2874,7 @@ vector<LitFragment> groupByFragment(const RoseBuildImpl &build) {
 }
 
 static
-void buildIncludedIdMap(unordered_map<u32, pair<u32, u8>> &includedIdMap,
+void buildIncludedIdMap(vectorscan::unordered::map<u32, pair<u32, u8>> &includedIdMap,
                         const LitProto *litProto) {
     if (!litProto) {
         return;
@@ -2904,8 +2904,8 @@ static
 void findInclusionGroups(vector<LitFragment> &fragments,
                          LitProto *fproto, LitProto *drproto,
                          LitProto *eproto, LitProto *sbproto) {
-    unordered_map<u32, pair<u32, u8>> includedIdMap;
-    unordered_map<u32, pair<u32, u8>> includedDelayIdMap;
+    vectorscan::unordered::map<u32, pair<u32, u8>> includedIdMap;
+    vectorscan::unordered::map<u32, pair<u32, u8>> includedDelayIdMap;
     buildIncludedIdMap(includedIdMap, fproto);
     buildIncludedIdMap(includedDelayIdMap, drproto);
     buildIncludedIdMap(includedIdMap, eproto);
@@ -3079,7 +3079,7 @@ pair<u32, u32> writeDelayPrograms(const RoseBuildImpl &build,
     auto lit_edge_map = findEdgesByLiteral(build);
 
     vector<u32> programs; // program offsets indexed by (delayed) lit id
-    unordered_map<u32, u32> cache; // program offsets we have already seen
+    vectorscan::unordered::map<u32, u32> cache; // program offsets we have already seen
 
     for (const auto &frag : fragments) {
         for (const u32 lit_id : frag.lit_ids) {
@@ -3128,7 +3128,7 @@ pair<u32, u32> writeAnchoredPrograms(const RoseBuildImpl &build,
     auto lit_edge_map = findEdgesByLiteral(build);
 
     vector<u32> programs; // program offsets indexed by anchored id
-    unordered_map<u32, u32> cache; // program offsets we have already seen
+    vectorscan::unordered::map<u32, u32> cache; // program offsets we have already seen
 
     for (const auto &frag : fragments) {
         for (const u32 lit_id : frag.lit_ids) {

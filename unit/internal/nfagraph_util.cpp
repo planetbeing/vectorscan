@@ -79,8 +79,8 @@ TEST(NFAGraph, split1) {
 
     NFAVertex pivot = c;
 
-    unordered_map<NFAVertex, NFAVertex> lhs_map;
-    unordered_map<NFAVertex, NFAVertex> rhs_map;
+    vectorscan::unordered::map<NFAVertex, NFAVertex> lhs_map;
+    vectorscan::unordered::map<NFAVertex, NFAVertex> rhs_map;
 
     splitGraph(src, pivot, &lhs, &lhs_map, &rhs, &rhs_map);
 
@@ -130,8 +130,8 @@ TEST(NFAGraph, split2) {
 
     NFAVertex pivot = c;
 
-    unordered_map<NFAVertex, NFAVertex> lhs_map;
-    unordered_map<NFAVertex, NFAVertex> rhs_map;
+    vectorscan::unordered::map<NFAVertex, NFAVertex> lhs_map;
+    vectorscan::unordered::map<NFAVertex, NFAVertex> rhs_map;
 
     splitGraph(src, pivot, &lhs, &lhs_map, &rhs, &rhs_map);
 
@@ -203,8 +203,8 @@ TEST(NFAGraph, split3) {
     pivots.push_back(d);
     pivots.push_back(g);
 
-    unordered_map<NFAVertex, NFAVertex> lhs_map;
-    unordered_map<NFAVertex, NFAVertex> rhs_map;
+    vectorscan::unordered::map<NFAVertex, NFAVertex> lhs_map;
+    vectorscan::unordered::map<NFAVertex, NFAVertex> rhs_map;
 
     splitGraph(src, pivots, &lhs, &lhs_map, &rhs, &rhs_map);
 
@@ -280,8 +280,8 @@ TEST(NFAGraph, split4) {
     pivots.push_back(d);
     pivots.push_back(g);
 
-    unordered_map<NFAVertex, NFAVertex> lhs_map;
-    unordered_map<NFAVertex, NFAVertex> rhs_map;
+    vectorscan::unordered::map<NFAVertex, NFAVertex> lhs_map;
+    vectorscan::unordered::map<NFAVertex, NFAVertex> rhs_map;
 
     splitGraph(src, pivots, &lhs, &lhs_map, &rhs, &rhs_map);
 

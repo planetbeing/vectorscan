@@ -36,7 +36,7 @@
 #include "som/som.h"
 #include "ue2common.h"
 
-#include <unordered_map>
+#include "vs_unordered.h"
 #include <boost/dynamic_bitset.hpp>
 
 namespace ue2 {
@@ -55,16 +55,16 @@ using NFAStateSet = boost::dynamic_bitset<>;
  *
  * The NFAStateSet in the output map is indexed by vertex_index.
  */
-std::unordered_map<NFAVertex, NFAStateSet>
+vectorscan::unordered::map<NFAVertex, NFAStateSet>
 findSquashers(const NGHolder &g, som_type som = SOM_NONE);
 
 /** Filters out squash states intended only for use in DFA construction. */
 void filterSquashers(const NGHolder &g,
-                     std::unordered_map<NFAVertex, NFAStateSet> &squash);
+                     vectorscan::unordered::map<NFAVertex, NFAStateSet> &squash);
 
 /** Populates squash masks for states that can be switched off by highlander
  * (single match) reporters. */
-std::unordered_map<NFAVertex, NFAStateSet>
+vectorscan::unordered::map<NFAVertex, NFAStateSet>
 findHighlanderSquashers(const NGHolder &g, const ReportManager &rm);
 
 } // namespace ue2

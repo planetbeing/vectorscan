@@ -95,7 +95,7 @@ private:
     map<ReportID, set<const OutfixInfo *>> outfix_map;
     map<ReportID, set<const raw_puff *>> puff_map;
 
-    unordered_set<ReportID> live_reports; //!< all live internal reports.
+    vectorscan::unordered::set<ReportID> live_reports; //!< all live internal reports.
 };
 
 unique_ptr<RoseDedupeAux> RoseBuildImpl::generateDedupeAux() const {

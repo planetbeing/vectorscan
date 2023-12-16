@@ -42,7 +42,7 @@
 
 #include <map>
 #include <set>
-#include <unordered_map>
+#include "vs_unordered.h"
 #include <vector>
 
 namespace ue2 {
@@ -157,17 +157,17 @@ private:
 
     /** \brief Mapping from Report to ID (inverse of \ref reportIds
      * vector). */
-    std::unordered_map<Report, size_t> reportIdToInternalMap;
+    vectorscan::unordered::map<Report, size_t> reportIdToInternalMap;
 
     /** \brief Mapping from ReportID to dedupe key. */
-    std::unordered_map<ReportID, u32> reportIdToDedupeKey;
+    vectorscan::unordered::map<ReportID, u32> reportIdToDedupeKey;
 
     /** \brief Mapping from ReportID to Rose program offset in bytecode. */
-    std::unordered_map<ReportID, u32> reportIdToProgramOffset;
+    vectorscan::unordered::map<ReportID, u32> reportIdToProgramOffset;
 
     /** \brief Mapping from external match ids to information about that
      * id. */
-    std::unordered_map<ReportID, external_report_info> externalIdMap;
+    vectorscan::unordered::node_map<ReportID, external_report_info> externalIdMap;
 
     /** \brief Mapping from expression index to exhaustion key. */
     std::map<s64a, u32> toExhaustibleKeyMap;

@@ -42,6 +42,7 @@
 #include <boost/iterator/iterator_facade.hpp>
 
 #include <functional> /* hash */
+#include <optional> /* optional */
 #include <tuple> /* tie */
 #include <type_traits> /* is_same, etc */
 #include <utility> /* pair, declval */
@@ -192,6 +193,18 @@ public:
         return std::hash<u64a>()(serial);
     }
 
+    std::optional<uint8_t> &role_properties_cache() const {
+        return p->role_properties_cache;
+    }
+
+    std::optional<uint8_t> &in_properties_cache() const {
+        return p->in_properties_cache;
+    }
+
+    std::optional<uint8_t> &out_properties_cache() const {
+        return p->out_properties_cache;
+    }
+
 private:
     vertex_node *raw(void) { return p; }
     vertex_node *p;
@@ -291,12 +304,26 @@ private:
          * need to be freed when the graph is being destroyed */
         vertex_edge_list<out_edge_hook> out_edge_list;
 
+        std::optional<uint8_t> role_properties_cache;
+        std::optional<uint8_t> in_properties_cache;
+        std::optional<uint8_t> out_properties_cache;
+
         /* The destructor only frees memory owned by the vertex and will leave
          * the neighbour's edges in a bad state. If a vertex is being removed
          * (rather than the graph being destroyed), then the more gentle clean
          * up of clear_vertex() is required to be called first */
         ~vertex_node() {
             out_edge_list.clear_and_dispose(delete_disposer());
+        }
+
+        void reset_in_properties_cache() {
+            in_properties_cache.reset();
+            role_properties_cache.reset();
+        }
+
+        void reset_out_properties_cache() {
+            out_properties_cache.reset();
+            role_properties_cache.reset();
         }
     };
 
@@ -332,6 +359,7 @@ protected: /* to allow renumbering */
     static const size_t N_SPECIAL_VERTICES = 0; /* override in derived class */
     size_t next_vertex_index = 0;
     size_t next_edge_index = 0;
+    std::optional<std::size_t> hash;
 
 private:
     size_t graph_edge_count = 0; /* maintained explicitly as we have no global
@@ -532,6 +560,7 @@ public:
         vertex_node *v = new vertex_node(new_serial());
         v->props.index = next_vertex_index++;
         vertices_list.push_back(*v);
+        hash.reset();
         return vertex_descriptor(v);
     }
 
@@ -539,6 +568,7 @@ public:
         vertex_node *vv = v.raw();
         assert(vv->in_edge_list.empty());
         assert(vv->out_edge_list.empty());
+        hash.reset();
         vertices_list.erase_and_dispose(vertices_list.iterator_to(*vv),
                                         delete_disposer());
     }
@@ -546,11 +576,15 @@ public:
     void clear_in_edges_impl(vertex_descriptor v) {
         graph_edge_count -= v.raw()->in_edge_list.size();
         v.raw()->in_edge_list.clear_and_dispose(in_edge_disposer());
+        v.raw()->reset_in_properties_cache();
+        hash.reset();
     }
 
     void clear_out_edges_impl(vertex_descriptor v) {
         graph_edge_count -= v.raw()->out_edge_list.size();
         v.raw()->out_edge_list.clear_and_dispose(out_edge_disposer());
+        v.raw()->reset_out_properties_cache();
+        hash.reset();
     }
 
     /* IncidenceGraph concept functions */
@@ -655,9 +689,12 @@ public:
         e->props.index = next_edge_index++;
 
         u.raw()->out_edge_list.push_back(*e);
+        u.raw()->reset_out_properties_cache();
         v.raw()->in_edge_list.push_back(*e);
+        v.raw()->reset_in_properties_cache();
 
         graph_edge_count++;
+        hash.reset();
         return {edge_descriptor(e), added};
     }
 
@@ -668,9 +705,12 @@ public:
         vertex_node *v = e.raw()->target;
 
         v->in_edge_list.erase(v->in_edge_list.iterator_to(*e.raw()));
+        v->reset_in_properties_cache();
         u->out_edge_list.erase(u->out_edge_list.iterator_to(*e.raw()));
+        u->reset_out_properties_cache();
 
         delete e.raw();
+        hash.reset();
     }
 
     template<class Predicate>
@@ -930,6 +970,7 @@ public:
         (*this)[v] = vp;
         (*this)[v].index = i;
 
+        hash.reset();
         return v;
     }
 
@@ -945,6 +986,7 @@ public:
         (*this)[e.first] = ep;
         (*this)[e.first].index = i;
 
+        hash.reset();
         return e;
     }
 
@@ -958,6 +1000,7 @@ public:
         for (std::tie(it, ite) = edges_impl(); it != ite; ++it) {
             (*this)[*it].index = next_edge_index++;
         }
+        hash.reset();
     }
 
     /** Pack the vertex index into a contiguous range [ 0, num_vertices(g) ).
@@ -975,6 +1018,7 @@ public:
 
             (*this)[*it].index = next_vertex_index++;
         }
+        hash.reset();
     }
 
     /** Returns what the next allocated vertex index will be. This is an upper
