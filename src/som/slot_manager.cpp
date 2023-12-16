@@ -136,7 +136,7 @@ u32 SomSlotManager::getSomSlot(const NGHolder &prefix,
 
 u32 SomSlotManager::getInitialResetSomSlot(const NGHolder &prefix,
                 const NGHolder &g,
-                const unordered_map<NFAVertex, u32> &region_map,
+                const vectorscan::unordered::map<NFAVertex, u32> &region_map,
                 u32 last_sent_region, bool *prefix_already_implemented) {
     DEBUG_PRINTF("getting initial reset; last sent region %u\n",
                  last_sent_region);
@@ -164,9 +164,9 @@ u32 SomSlotManager::getInitialResetSomSlot(const NGHolder &prefix,
     // Clone a copy of g (and its region map) that we will be able to store
     // later on.
     shared_ptr<NGHolder> gg = make_shared<NGHolder>();
-    unordered_map<NFAVertex, NFAVertex> orig_to_copy;
+    vectorscan::unordered::map<NFAVertex, NFAVertex> orig_to_copy;
     cloneHolder(*gg, g, &orig_to_copy);
-    unordered_map<NFAVertex, u32> gg_region_map;
+    vectorscan::unordered::map<NFAVertex, u32> gg_region_map;
     for (const auto &m : region_map) {
         assert(contains(region_map, m.first));
         gg_region_map.emplace(orig_to_copy.at(m.first), m.second);

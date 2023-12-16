@@ -192,6 +192,11 @@ bool is_equal_i(const NGHolder &a, const NGHolder &b,
 
 /** \brief loose hash of an NGHolder; equal if is_equal would return true. */
 u64a hash_holder(const NGHolder &g) {
+    auto const &h = g.hash_code();
+    if (h) {
+        return *h;
+    }
+
     size_t rv = 0;
 
     for (auto v : vertices_range(g)) {
@@ -203,6 +208,8 @@ u64a hash_holder(const NGHolder &g) {
         }
     }
 
+    g.set_hash_code(rv);
+
     return rv;
 }
 
@@ -213,15 +220,23 @@ bool is_equal(const NGHolder &a, const NGHolder &b) {
         return true;
     }
 
-    return is_equal_i(a, b, full_check_report());
+    return hash_holder(a) == hash_holder(b);
 }
 
 bool is_equal(const NGHolder &a, ReportID a_rep,
               const NGHolder &b, ReportID b_rep) {
     DEBUG_PRINTF("testing %p %p\n", &a, &b);
 
-    if (&a == &b && a_rep == b_rep) {
-        return true;
+    if (a_rep == b_rep) {
+        if (&a == &b) {
+            return true;
+        } else if (hash_holder(a) == hash_holder(b)) {
+            return true;
+        } else {
+            return false;
+        }
+    } else if (hash_holder(a) != hash_holder(b)) {
+        return false;
     }
 
     return is_equal_i(a, b, equiv_check_report(a_rep, b_rep));

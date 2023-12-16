@@ -735,7 +735,7 @@ void CastleProto::erase(u32 top) {
     assert(contains(repeats, top));
     repeats.erase(top);
     for (auto &m : report_map) {
-        m.second.erase(top);
+        const_cast<std::remove_const_t<decltype(m.second)> &>(m.second).erase(top);
     }
 }
 

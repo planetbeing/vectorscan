@@ -37,13 +37,13 @@
 
 #include "ng_holder.h"
 
-#include <unordered_map>
+#include "vs_unordered.h"
 
 namespace ue2 {
 
-std::unordered_map<NFAVertex, NFAVertex> findDominators(const NGHolder &g);
+vectorscan::unordered::map<NFAVertex, NFAVertex> findDominators(const NGHolder &g);
 
-std::unordered_map<NFAVertex, NFAVertex> findPostDominators(const NGHolder &g);
+vectorscan::unordered::map<NFAVertex, NFAVertex> findPostDominators(const NGHolder &g);
 
 } // namespace ue2
 

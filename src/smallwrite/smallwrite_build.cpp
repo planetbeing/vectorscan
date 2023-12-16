@@ -394,7 +394,7 @@ namespace {
  */
 struct ACVisitor : public boost::default_bfs_visitor {
     ACVisitor(LitTrie &trie_in,
-              unordered_map<LitTrieVertex, LitTrieVertex> &failure_map_in,
+              vectorscan::unordered::map<LitTrieVertex, LitTrieVertex> &failure_map_in,
               vector<LitTrieVertex> &ordering_in)
         : mutable_trie(trie_in), failure_map(failure_map_in),
           ordering(ordering_in) {}
@@ -444,7 +444,7 @@ struct ACVisitor : public boost::default_bfs_visitor {
 
 private:
     LitTrie &mutable_trie; //!< For setting reports property.
-    unordered_map<LitTrieVertex, LitTrieVertex> &failure_map;
+    vectorscan::unordered::map<LitTrieVertex, LitTrieVertex> &failure_map;
     vector<LitTrieVertex> &ordering; //!< BFS ordering for vertices.
 };
 }
@@ -470,7 +470,7 @@ bool isSaneTrie(const LitTrie &trie) {
  */
 static
 void buildAutomaton(LitTrie &trie,
-                    unordered_map<LitTrieVertex, LitTrieVertex> &failure_map,
+                    vectorscan::unordered::map<LitTrieVertex, LitTrieVertex> &failure_map,
                     vector<LitTrieVertex> &ordering) {
     assert(isSaneTrie(trie));
 
@@ -654,9 +654,9 @@ u16 buildAlphabet(const LitTrie &trie, bool nocase,
  * ordering.
  */
 static
-unordered_map<LitTrieVertex, u32>
+vectorscan::unordered::map<LitTrieVertex, u32>
 makeStateMap(const LitTrie &trie, const vector<LitTrieVertex> &ordering) {
-    unordered_map<LitTrieVertex, u32> state_ids;
+    vectorscan::unordered::map<LitTrieVertex, u32> state_ids;
     state_ids.reserve(num_vertices(trie));
     u32 idx = DEAD_STATE + 1;
     state_ids.emplace(trie.root, idx++);
@@ -673,7 +673,7 @@ unique_ptr<raw_dfa> buildDfa(LitTrie &trie, bool nocase) {
     DEBUG_PRINTF("trie has %zu states\n", num_vertices(trie));
 
     vector<LitTrieVertex> ordering;
-    unordered_map<LitTrieVertex, LitTrieVertex> failure_map;
+    vectorscan::unordered::map<LitTrieVertex, LitTrieVertex> failure_map;
     buildAutomaton(trie, failure_map, ordering);
 
     // Construct DFA states in BFS order.

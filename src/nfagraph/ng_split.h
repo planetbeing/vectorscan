@@ -35,7 +35,7 @@
 
 #include "ng_holder.h"
 
-#include <unordered_map>
+#include "vs_unordered.h"
 #include <vector>
 
 namespace ue2 {
@@ -55,21 +55,21 @@ class NGHolder;
  *   vertices which have an edge to every pivot
  */
 void splitGraph(const NGHolder &base, NFAVertex pivot, NGHolder *lhs,
-                std::unordered_map<NFAVertex, NFAVertex> *lhs_map,
+                vectorscan::unordered::map<NFAVertex, NFAVertex> *lhs_map,
                 NGHolder *rhs,
-                std::unordered_map<NFAVertex, NFAVertex> *rhs_map);
+                vectorscan::unordered::map<NFAVertex, NFAVertex> *rhs_map);
 
 void splitGraph(const NGHolder &base, const std::vector<NFAVertex> &pivots,
                 NGHolder *lhs,
-                std::unordered_map<NFAVertex, NFAVertex> *lhs_map,
+                vectorscan::unordered::map<NFAVertex, NFAVertex> *lhs_map,
                 NGHolder *rhs,
-                std::unordered_map<NFAVertex, NFAVertex> *rhs_map);
+                vectorscan::unordered::map<NFAVertex, NFAVertex> *rhs_map);
 
 void splitLHS(const NGHolder &base, NFAVertex pivot, NGHolder *lhs,
-              std::unordered_map<NFAVertex, NFAVertex> *lhs_map);
+              vectorscan::unordered::map<NFAVertex, NFAVertex> *lhs_map);
 
 void splitRHS(const NGHolder &base, const std::vector<NFAVertex> &pivots,
-              NGHolder *rhs, std::unordered_map<NFAVertex, NFAVertex> *rhs_map);
+              NGHolder *rhs, vectorscan::unordered::map<NFAVertex, NFAVertex> *rhs_map);
 
 } // namespace ue2
 

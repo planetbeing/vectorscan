@@ -413,7 +413,7 @@ public:
 
 private:
     const NGHolder &g;
-    unordered_map<NFAVertex, u32> vertexToIndex;
+    vectorscan::unordered::map<NFAVertex, u32> vertexToIndex;
     vector<NFAVertex> indexToVertex;
     vector<CharReach> cr_by_index;
     StateSet init;
@@ -709,7 +709,7 @@ int addAutomaton(RoseBuildImpl &build, const NGHolder &h, ReportID *remap) {
 
 static
 void setReports(NGHolder &h, const map<NFAVertex, set<u32>> &reportMap,
-                const unordered_map<NFAVertex, NFAVertex> &orig_to_copy) {
+                const vectorscan::unordered::map<NFAVertex, NFAVertex> &orig_to_copy) {
     for (const auto &m : reportMap) {
         NFAVertex t = orig_to_copy.at(m.first);
         assert(!m.second.empty());
@@ -721,7 +721,7 @@ void setReports(NGHolder &h, const map<NFAVertex, set<u32>> &reportMap,
 int addAnchoredNFA(RoseBuildImpl &build, const NGHolder &wrapper,
                    const map<NFAVertex, set<u32>> &reportMap) {
     NGHolder h;
-    unordered_map<NFAVertex, NFAVertex> orig_to_copy;
+    vectorscan::unordered::map<NFAVertex, NFAVertex> orig_to_copy;
     cloneHolder(h, wrapper, &orig_to_copy);
     clear_in_edges(h.accept, h);
     clear_in_edges(h.acceptEod, h);

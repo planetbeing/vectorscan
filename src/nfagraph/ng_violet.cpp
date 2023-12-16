@@ -736,7 +736,7 @@ void poisonFromSuccessor(const NGHolder &h, const ue2_literal &succ,
     const size_t edge_count = num_edges(h);
     EdgeSet bad_edges(edge_count);
 
-    unordered_map<NFAVertex, EdgeSet> curr;
+    vectorscan::unordered::map<NFAVertex, EdgeSet> curr;
     for (const auto &e : in_edges_range(h.accept, h)) {
         auto &path_set = curr[source(e, h)];
         if (path_set.empty()) {
@@ -745,7 +745,7 @@ void poisonFromSuccessor(const NGHolder &h, const ue2_literal &succ,
         path_set.set(h[e].index);
     }
 
-    unordered_map<NFAVertex, EdgeSet> next;
+    vectorscan::unordered::map<NFAVertex, EdgeSet> next;
     for (auto it = succ.rbegin(); it != succ.rend(); ++it) {
         for (const auto &path : curr) {
             NFAVertex u = path.first;
@@ -1041,8 +1041,8 @@ bool splitRoseEdge(const NGHolder &base_graph, RoseInGraph &vg,
         throw std::bad_alloc();
     }
 
-    unordered_map<NFAVertex, NFAVertex> lhs_map;
-    unordered_map<NFAVertex, NFAVertex> rhs_map;
+    vectorscan::unordered::map<NFAVertex, NFAVertex> lhs_map;
+    vectorscan::unordered::map<NFAVertex, NFAVertex> rhs_map;
 
     splitGraph(base_graph, splitters, lhs.get(), &lhs_map, rhs.get(), &rhs_map);
     DEBUG_PRINTF("split %s:%zu into %s:%zu + %s:%zu\n",
@@ -1217,7 +1217,7 @@ void splitEdgesByCut(NGHolder &h, RoseInGraph &vg,
                  num_vertices(h));
 
     /* create literal vertices and connect preds */
-    unordered_set<RoseInVertex> done_sources;
+    vectorscan::unordered::set<RoseInVertex> done_sources;
     map<RoseInVertex, vector<pair<RoseInVertex, NFAVertex>>> verts_by_source;
     for (const RoseInEdge &ve : to_cut) {
         assert(&h == &*vg[ve].graph);
@@ -1232,7 +1232,7 @@ void splitEdgesByCut(NGHolder &h, RoseInGraph &vg,
             NFAVertex pivot = target(e, h);
 
             DEBUG_PRINTF("splitting on pivot %zu\n", h[pivot].index);
-            unordered_map<NFAVertex, NFAVertex> temp_map;
+            vectorscan::unordered::map<NFAVertex, NFAVertex> temp_map;
             shared_ptr<NGHolder> new_lhs = make_shared<NGHolder>();
             if (!new_lhs) {
                 assert(0);
@@ -1317,7 +1317,7 @@ void splitEdgesByCut(NGHolder &h, RoseInGraph &vg,
                effort */
 
             if (!contains(done_rhs, adj)) {
-                unordered_map<NFAVertex, NFAVertex> temp_map;
+                vectorscan::unordered::map<NFAVertex, NFAVertex> temp_map;
                 shared_ptr<NGHolder> new_rhs = make_shared<NGHolder>();
                 if (!new_rhs) {
                     assert(0);
@@ -2052,7 +2052,7 @@ bool improvePrefix(NGHolder &h, RoseInGraph &vg, const vector<RoseInEdge> &ee,
 
     if (ee.size() > 1) {
         DEBUG_PRINTF("split the prefix apart based on succ literals\n");
-        unordered_map<shared_ptr<NGHolder>, vector<pair<RoseInEdge, u32> >,
+        vectorscan::unordered::map<shared_ptr<NGHolder>, vector<pair<RoseInEdge, u32> >,
                       NGHolderHasher, NGHolderEqual> trimmed;
 
         for (const auto &e : ee) {
@@ -2077,8 +2077,7 @@ bool improvePrefix(NGHolder &h, RoseInGraph &vg, const vector<RoseInEdge> &ee,
 
         /* shift the contents to a vector so we can modify the graphs without
          * violating the map's invariants. */
-        vector<pair<shared_ptr<NGHolder>, vector<pair<RoseInEdge, u32> > > >
-            trimmed_vec(trimmed.begin(), trimmed.end());
+        vector<decltype(trimmed)::value_type> trimmed_vec(trimmed.begin(), trimmed.end());
         trimmed.clear();
         for (auto &elem : trimmed_vec) {
             shared_ptr<NGHolder> &hp = elem.first;
@@ -2172,7 +2171,7 @@ void extractStrongLiterals(RoseInGraph &vg, const CompileContext &cc) {
 
     STAGE_DEBUG_PRINTF("EXTRACT STRONG LITERALS\n");
 
-    unordered_set<NGHolder *> stuck;
+    vectorscan::unordered::set<NGHolder *> stuck;
     insertion_ordered_map<NGHolder *, vector<RoseInEdge>> edges_by_graph;
     bool changed;
 
@@ -2251,7 +2250,7 @@ void improveWeakInfixes(RoseInGraph &vg, const CompileContext &cc) {
 
     RoseInVertex start = getStart(vg);
 
-    unordered_set<NGHolder *> weak;
+    vectorscan::unordered::set<NGHolder *> weak;
 
     for (RoseInVertex vv : adjacent_vertices_range(start, vg)) {
         /* outfixes shouldn't have made it this far */
@@ -2298,7 +2297,7 @@ void splitEdgesForSuffix(const NGHolder &base_graph, RoseInGraph &vg,
         assert(0);
         throw bad_alloc();
     }
-    unordered_map<NFAVertex, NFAVertex> v_map;
+    vectorscan::unordered::map<NFAVertex, NFAVertex> v_map;
     cloneHolder(*lhs, base_graph, &v_map);
     lhs->kind = NFA_INFIX;
     clear_in_edges(lhs->accept, *lhs);
@@ -2919,7 +2918,7 @@ bool ensureImplementable(RoseBuild &rose, RoseInGraph &vg, bool allow_changes,
     bool changed = false;
     bool need_to_recalc = false;
     u32 added_count = 0;
-    unordered_set<shared_ptr<NGHolder>> good; /* known to be implementable */
+    vectorscan::unordered::set<shared_ptr<NGHolder>> good; /* known to be implementable */
     do {
         changed = false;
         DEBUG_PRINTF("added %u\n", added_count);

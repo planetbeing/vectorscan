@@ -46,7 +46,7 @@
 #include <limits>
 #include <map>
 #include <set>
-#include <unordered_map>
+#include "vs_unordered.h"
 #include <unordered_set>
 
 #include <boost/graph/filtered_graph.hpp>
@@ -473,7 +473,7 @@ void duplicateReport(NGHolder &g, ReportID r_old, ReportID r_new) {
 
 static
 void fillHolderOutEdges(NGHolder &out, const NGHolder &in,
-                        const unordered_map<NFAVertex, NFAVertex> &v_map,
+                        const vectorscan::unordered::map<NFAVertex, NFAVertex> &v_map,
                         NFAVertex u) {
     NFAVertex u_new = v_map.at(u);
 
@@ -495,9 +495,9 @@ void fillHolderOutEdges(NGHolder &out, const NGHolder &in,
 }
 
 void fillHolder(NGHolder *outp, const NGHolder &in, const deque<NFAVertex> &vv,
-                unordered_map<NFAVertex, NFAVertex> *v_map_out) {
+                vectorscan::unordered::map<NFAVertex, NFAVertex> *v_map_out) {
     NGHolder &out = *outp;
-    unordered_map<NFAVertex, NFAVertex> &v_map = *v_map_out;
+    vectorscan::unordered::map<NFAVertex, NFAVertex> &v_map = *v_map_out;
 
     out.kind = in.kind;
 
@@ -579,7 +579,7 @@ void cloneHolder(NGHolder &out, const NGHolder &in) {
 }
 
 void cloneHolder(NGHolder &out, const NGHolder &in,
-                 unordered_map<NFAVertex, NFAVertex> *mapping) {
+                 vectorscan::unordered::map<NFAVertex, NFAVertex> *mapping) {
     cloneHolder(out, in);
     vector<NFAVertex> out_verts(num_vertices(in));
     for (auto v : vertices_range(out)) {
@@ -602,7 +602,7 @@ unique_ptr<NGHolder> cloneHolder(const NGHolder &in) {
 
 void reverseHolder(const NGHolder &g_in, NGHolder &g) {
     // Make the BGL do the grunt work.
-    unordered_map<NFAVertex, NFAVertex> vertexMap;
+    vectorscan::unordered::map<NFAVertex, NFAVertex> vertexMap;
     boost::transpose_graph(g_in, g,
                 orig_to_copy(boost::make_assoc_property_map(vertexMap)));
 

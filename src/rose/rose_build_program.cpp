@@ -749,7 +749,7 @@ void makeRoleReports(const RoseBuildImpl &build,
 }
 
 static
-void makeRoleSetState(const unordered_map<RoseVertex, u32> &roleStateIndices,
+void makeRoleSetState(const vectorscan::unordered::map<RoseVertex, u32> &roleStateIndices,
                       RoseVertex v, RoseProgram &program) {
     // We only need this instruction if a state index has been assigned to this
     // vertex.
@@ -2086,7 +2086,7 @@ RoseProgram makeRoleProgram(const RoseBuildImpl &build,
                         const map<RoseVertex, left_build_info> &leftfix_info,
                         const map<suffix_id, u32> &suffixes,
                         const map<u32, engine_info> &engine_info_by_queue,
-                        const unordered_map<RoseVertex, u32> &roleStateIndices,
+                        const vectorscan::unordered::map<RoseVertex, u32> &roleStateIndices,
                         ProgramBuild &prog_build, const RoseEdge &e) {
     const RoseGraph &g = build.g;
     auto v = target(e, g);
@@ -2232,7 +2232,7 @@ RoseProgram makeLiteralProgram(const RoseBuildImpl &build,
                          const map<RoseVertex, left_build_info> &leftfix_info,
                          const map<suffix_id, u32> &suffixes,
                          const map<u32, engine_info> &engine_info_by_queue,
-                         const unordered_map<RoseVertex, u32> &roleStateIndices,
+                         const vectorscan::unordered::map<RoseVertex, u32> &roleStateIndices,
                          ProgramBuild &prog_build, u32 lit_id,
                          const vector<RoseEdge> &lit_edges,
                          bool is_anchored_replay_program) {

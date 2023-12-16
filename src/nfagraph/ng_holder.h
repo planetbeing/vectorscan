@@ -122,6 +122,12 @@ public:
     const vertex_descriptor acceptEod; //!< Accept at EOD vertex.
 
     vertex_descriptor getSpecialVertex(u32 id) const;
+    std::optional<std::size_t> const &hash_code() const {
+        return hash;
+    }
+    void set_hash_code(std::size_t hash) const {
+        const_cast<NGHolder *>(this)->hash = hash;
+    }
 };
 
 typedef NGHolder::vertex_descriptor NFAVertex;

@@ -42,7 +42,7 @@
 #include <set>
 #include <map>
 #include <memory>
-#include <unordered_map>
+#include "vs_unordered.h"
 #include <vector>
 
 struct NFA;
@@ -70,10 +70,10 @@ struct CompileContext;
  * graph.
  */
 bytecode_ptr<NFA> generate(NGHolder &g,
-            const std::unordered_map<NFAVertex, u32> &states,
+            const vectorscan::unordered::map<NFAVertex, u32> &states,
             const std::vector<BoundedRepeatData> &repeats,
-            const std::unordered_map<NFAVertex, NFAStateSet> &reportSquashMap,
-            const std::unordered_map<NFAVertex, NFAStateSet> &squashMap,
+            const vectorscan::unordered::map<NFAVertex, NFAStateSet> &reportSquashMap,
+            const vectorscan::unordered::map<NFAVertex, NFAStateSet> &squashMap,
             const std::map<u32, std::set<NFAVertex>> &tops,
             const std::set<NFAVertex> &zombies,
             bool do_accel,
@@ -89,10 +89,10 @@ bytecode_ptr<NFA> generate(NGHolder &g,
  * implementable.
  */
 u32 countAccelStates(NGHolder &h,
-            const std::unordered_map<NFAVertex, u32> &states,
+            const vectorscan::unordered::map<NFAVertex, u32> &states,
             const std::vector<BoundedRepeatData> &repeats,
-            const std::unordered_map<NFAVertex, NFAStateSet> &reportSquashMap,
-            const std::unordered_map<NFAVertex, NFAStateSet> &squashMap,
+            const vectorscan::unordered::map<NFAVertex, NFAStateSet> &reportSquashMap,
+            const vectorscan::unordered::map<NFAVertex, NFAStateSet> &squashMap,
             const std::map<u32, std::set<NFAVertex>> &tops,
             const std::set<NFAVertex> &zombies,
             const CompileContext &cc);

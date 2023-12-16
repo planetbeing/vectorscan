@@ -131,9 +131,9 @@ void getStateOrdering(NGHolder &g, const flat_set<NFAVertex> &tops,
 
 // Returns the number of states.
 static
-unordered_map<NFAVertex, u32>
+vectorscan::unordered::map<NFAVertex, u32>
 getStateIndices(const NGHolder &h, const vector<NFAVertex> &ordering) {
-    unordered_map<NFAVertex, u32> states;
+    vectorscan::unordered::map<NFAVertex, u32> states;
     for (const auto &v : vertices_range(h)) {
         states[v] = NO_STATE;
     }
@@ -190,7 +190,7 @@ void optimiseTightLoops(const NGHolder &g, vector<NFAVertex> &ordering) {
     }
 }
 
-unordered_map<NFAVertex, u32>
+vectorscan::unordered::map<NFAVertex, u32>
 numberStates(NGHolder &h, const flat_set<NFAVertex> &tops) {
     DEBUG_PRINTF("numbering states for holder %p\n", &h);
 
@@ -202,7 +202,7 @@ numberStates(NGHolder &h, const flat_set<NFAVertex> &tops) {
     return getStateIndices(h, ordering);
 }
 
-u32 countStates(const unordered_map<NFAVertex, u32> &state_ids) {
+u32 countStates(const vectorscan::unordered::map<NFAVertex, u32> &state_ids) {
     if (state_ids.empty()) {
         return 0;
     }
